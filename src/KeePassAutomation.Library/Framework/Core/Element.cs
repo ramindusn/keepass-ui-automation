@@ -4,9 +4,9 @@ using FlaUI.Core.Input;
 
 namespace KeePassAutomation.Framework.Core
 {
-    // A control described by how to find it, and found again on every action, the way a Playwright
-    // Locator works. Nothing is looked up when it is declared, so a page can list its controls in
-    // its constructor before the window exists. Every lookup waits, so no action needs its own wait.
+    // A control described by how to find it, and found again on every action. Nothing is looked up
+    // when it is declared, so a page can list its controls before its window exists. Every lookup
+    // waits, so no action needs its own wait.
     public sealed class Element
     {
         private readonly Func<AutomationElement> _find;

@@ -4,8 +4,7 @@ using NUnit.Framework;
 
 namespace KeePassAutomation.Tests.Setup
 {
-    // The settings every UI test runs with, in one place, the way playwright.config keeps them.
-    // Change a value here and nothing else needs to change. Nothing here knows which app is under test.
+    // The settings every UI test runs with. Change a value here and nothing else needs to change.
     public static class TestConfig
     {
         // Folder for what the tests leave behind, under the test run's working directory.
