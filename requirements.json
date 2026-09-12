@@ -1,5 +1,6 @@
 [
   { "id": "REQ-001", "description": "The application starts and presents its main window" },
   { "id": "REQ-002", "description": "A database opens only with the correct master key" },
-  { "id": "REQ-003", "description": "Selecting a group lists the entries it contains" }
+  { "id": "REQ-003", "description": "Selecting a group lists the entries it contains" },
+  { "id": "REQ-004", "description": "Changes to an entry are kept in its history" }
 ]
