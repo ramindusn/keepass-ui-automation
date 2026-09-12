@@ -31,7 +31,7 @@ namespace KeePassAutomation.Framework.AppUnderTest
         // Waits for a window of this app by the start of its title; any of the given titles matches.
         public Window WaitForWindow(params string[] titleStarts)
         {
-            return Waits.ForWindow(Automation, Application.ProcessId, titleStarts);
+            return Waits.ForWindow(MainWindow, titleStarts);
         }
 
         // Launch failures happen in SetUp, before TearDown has a session, so evidence is captured here.

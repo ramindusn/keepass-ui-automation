@@ -1,5 +1,4 @@
 using System;
-using FlaUI.Core;
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using FlaUI.Core.Tools;
@@ -42,14 +41,14 @@ namespace KeePassAutomation.Framework.Core
 
         // Matches the start of the title. Owned dialogs aren't always under their owner in the UIA tree,
         // so the owner's process is searched on the desktop too, excluding the owner itself.
-        // A top-level window of the app under test, by the start of its title. Owned dialogs are
-        // top-level windows too, so this finds every KeePass dialog. A form that opens under several
-        // titles ("Add Entry", "Edit Entry") matches any of them.
-        public static Window ForWindow(AutomationBase automation, int processId, string[] titleStarts, TimeSpan? timeout = null)
+        // A window of the app by the start of its title; a form that opens under several titles
+        // ("Add Entry", "Edit Entry") matches any of them. An owned dialog can sit under its owner in
+        // the UIA tree, on the desktop, or under another dialog, so all three places are searched.
+        public static Window ForWindow(Window owner, string[] titleStarts, TimeSpan? timeout = null)
         {
-            var desktop = automation.GetDesktop();
+            var processId = owner.Properties.ProcessId.Value;
 
-            return For(desktop, () => FindWindow(desktop, processId, titleStarts),
+            return For(owner, () => FindWindow(owner, processId, titleStarts),
                 "a window titled '" + string.Join("…' or '", titleStarts) + "…'",
                 timeout);
         }
@@ -64,11 +63,30 @@ namespace KeePassAutomation.Framework.Core
             }
         }
 
-        private static Window FindWindow(AutomationElement desktop, int processId, string[] titleStarts)
+        private static Window FindWindow(Window owner, int processId, string[] titleStarts)
         {
-            var windows = desktop.FindAllChildren(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId)));
+            foreach (var modal in owner.ModalWindows)
+            {
+                if (HasTitleStarting(modal, titleStarts))
+                {
+                    return modal;
+                }
+            }
 
-            foreach (var window in windows)
+            var onDesktop = owner.Automation.GetDesktop()
+                .FindAllChildren(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId)));
+
+            foreach (var window in onDesktop)
+            {
+                if (!window.Equals(owner) && HasTitleStarting(window, titleStarts))
+                {
+                    return window.AsWindow();
+                }
+            }
+
+            var nested = owner.FindAllDescendants(cf => cf.ByControlType(ControlType.Window));
+
+            foreach (var window in nested)
             {
                 if (HasTitleStarting(window, titleStarts))
                 {
