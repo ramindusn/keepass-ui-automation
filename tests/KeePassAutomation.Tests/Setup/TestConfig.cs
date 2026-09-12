@@ -41,6 +41,15 @@ namespace KeePassAutomation.Tests.Setup
             public static readonly int UiaTreeDepth = 8;
         }
 
+        public static class Run
+        {
+            // Each run records what it drove, on what machine, from which commit and by whom.
+            public static readonly bool WriteManifest = true;
+
+            // Where the published report lives, so a run on the trend links back to it.
+            public const string ReportUrl = "https://ramindusn.github.io/keepass-ui-automation/";
+        }
+
         // ---- Derived from the environment; not meant to be edited ----
 
         // Set by GitHub Actions. On CI, evidence that cannot be produced fails the test;
