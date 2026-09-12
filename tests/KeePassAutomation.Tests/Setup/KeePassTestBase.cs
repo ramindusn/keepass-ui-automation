@@ -5,7 +5,6 @@ using Allure.NUnit;
 using KeePassAutomation.Framework.AppUnderTest;
 using KeePassAutomation.Framework.Diagnostics;
 using KeePassAutomation.Screens;
-using KeePassAutomation.Screens.Dialogs;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 
@@ -35,23 +34,7 @@ namespace KeePassAutomation.Tests.Setup
             }
         }
 
-        // One page object per window or dialog. Each finds its own window when an action is called,
-        // so a test names the page it is on and nothing else.
         protected MainWindow MainWindow { get; private set; }
-
-        protected FileDialog FileDialog { get; private set; }
-
-        protected CreateMasterKeyDialog CreateMasterKeyDialog { get; private set; }
-
-        protected DatabaseSettingsDialog DatabaseSettingsDialog { get; private set; }
-
-        protected OpenDatabaseDialog OpenDatabaseDialog { get; private set; }
-
-        protected EntryDialog EntryDialog { get; private set; }
-
-        protected EntryViewer EntryViewer { get; private set; }
-
-        protected FindDialog FindDialog { get; private set; }
 
         protected static string ArtifactsDirectory { get; } =
             Path.Combine(TestContext.CurrentContext.WorkDirectory, "artifacts");
@@ -71,15 +54,7 @@ namespace KeePassAutomation.Tests.Setup
             _recording = StartRecording(TestContext.CurrentContext.Test.Name);
 
             _session = AppSession.Launch(ArtifactsDirectory);
-
-            MainWindow = new MainWindow(_session.MainWindow);
-            FileDialog = new FileDialog(MainWindow);
-            CreateMasterKeyDialog = new CreateMasterKeyDialog(MainWindow);
-            DatabaseSettingsDialog = new DatabaseSettingsDialog(MainWindow);
-            OpenDatabaseDialog = new OpenDatabaseDialog(MainWindow);
-            EntryDialog = new EntryDialog(MainWindow);
-            EntryViewer = new EntryViewer(MainWindow);
-            FindDialog = new FindDialog(MainWindow);
+            MainWindow = new MainWindow(_session);
         }
 
         [TearDown]

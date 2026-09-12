@@ -5,6 +5,7 @@ using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using FlaUI.Core.Tools;
 using FlaUI.UIA3;
+using KeePassAutomation.Framework.Core;
 using KeePassAutomation.Framework.Diagnostics;
 
 namespace KeePassAutomation.Framework.AppUnderTest
@@ -26,6 +27,12 @@ namespace KeePassAutomation.Framework.AppUnderTest
         public UIA3Automation Automation { get; }
 
         public Window MainWindow { get; }
+
+        // Waits for a window of this app by the start of its title; any of the given titles matches.
+        public Window WaitForWindow(params string[] titleStarts)
+        {
+            return Waits.ForWindow(Automation, Application.ProcessId, titleStarts);
+        }
 
         // Launch failures happen in SetUp, before TearDown has a session, so evidence is captured here.
         public static AppSession Launch(string evidenceDirectory = null)

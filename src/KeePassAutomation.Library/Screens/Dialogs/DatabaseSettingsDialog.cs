@@ -1,4 +1,5 @@
 using FlaUI.Core.AutomationElements;
+using KeePassAutomation.Framework.AppUnderTest;
 using KeePassAutomation.Framework.Core;
 
 namespace KeePassAutomation.Screens.Dialogs
@@ -8,11 +9,11 @@ namespace KeePassAutomation.Screens.Dialogs
     {
         public const string Title = "Configure New Database";
 
-        private readonly MainWindow _owner;
+        private readonly AppSession _session;
 
-        public DatabaseSettingsDialog(MainWindow owner)
+        public DatabaseSettingsDialog(AppSession session)
         {
-            _owner = owner;
+            _session = session;
         }
 
         public void ClickOk()
@@ -22,7 +23,7 @@ namespace KeePassAutomation.Screens.Dialogs
 
         protected override AutomationElement Locate()
         {
-            return Waits.ForModalWindow(_owner.Window, Title);
+            return _session.WaitForWindow(Title);
         }
     }
 }

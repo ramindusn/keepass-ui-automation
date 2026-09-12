@@ -1,5 +1,6 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
+using KeePassAutomation.Framework.AppUnderTest;
 using KeePassAutomation.Framework.Core;
 
 namespace KeePassAutomation.Screens.Dialogs
@@ -12,11 +13,11 @@ namespace KeePassAutomation.Screens.Dialogs
 
         private static readonly string[] Titles = { "Add Entry", "Edit Entry" };
 
-        private readonly MainWindow _owner;
+        private readonly AppSession _session;
 
-        public EntryDialog(MainWindow owner)
+        public EntryDialog(AppSession session)
         {
-            _owner = owner;
+            _session = session;
         }
 
         public void SetTitle(string title)
@@ -53,7 +54,7 @@ namespace KeePassAutomation.Screens.Dialogs
 
         protected override AutomationElement Locate()
         {
-            return Waits.ForModalWindow(_owner.Window, Titles);
+            return _session.WaitForWindow(Titles);
         }
 
         private AutomationElement HistoryRowOrNull(int index)

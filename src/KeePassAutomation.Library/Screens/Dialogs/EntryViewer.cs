@@ -1,4 +1,5 @@
 using FlaUI.Core.AutomationElements;
+using KeePassAutomation.Framework.AppUnderTest;
 using KeePassAutomation.Framework.Core;
 
 namespace KeePassAutomation.Screens.Dialogs
@@ -8,11 +9,11 @@ namespace KeePassAutomation.Screens.Dialogs
     {
         public const string Title = "View Entry (Read-Only)";
 
-        private readonly MainWindow _owner;
+        private readonly AppSession _session;
 
-        public EntryViewer(MainWindow owner)
+        public EntryViewer(AppSession session)
         {
-            _owner = owner;
+            _session = session;
         }
 
         public string EntryTitle
@@ -27,7 +28,7 @@ namespace KeePassAutomation.Screens.Dialogs
 
         protected override AutomationElement Locate()
         {
-            return Waits.ForModalWindow(_owner.Window, Title);
+            return _session.WaitForWindow(Title);
         }
     }
 }

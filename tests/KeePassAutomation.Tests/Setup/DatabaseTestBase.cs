@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using KeePassAutomation.Screens.Dialogs;
 using NUnit.Framework;
 
 namespace KeePassAutomation.Tests.Setup
@@ -50,13 +51,17 @@ namespace KeePassAutomation.Tests.Setup
         // Saved, so closing KeePass afterwards doesn't stop at a "save changes?" prompt.
         protected void CreateSavedDatabase()
         {
+            var fileDialog = new FileDialog(Session);
+            var masterKeyDialog = new CreateMasterKeyDialog(Session);
+            var settingsDialog = new DatabaseSettingsDialog(Session);
+
             MainWindow.ClickToolbarButton("New Database");
-            FileDialog.TypeFileName(DatabasePath);
-            FileDialog.PressEnter();
-            CreateMasterKeyDialog.TypePassword(MasterPassword);
-            CreateMasterKeyDialog.TypeRepeatPassword(MasterPassword);
-            CreateMasterKeyDialog.ClickOk();
-            DatabaseSettingsDialog.ClickOk();
+            fileDialog.TypeFileName(DatabasePath);
+            fileDialog.PressEnter();
+            masterKeyDialog.TypePassword(MasterPassword);
+            masterKeyDialog.TypeRepeatPassword(MasterPassword);
+            masterKeyDialog.ClickOk();
+            settingsDialog.ClickOk();
             MainWindow.WaitForDatabaseToOpen();
 
             MainWindow.ClickToolbarButton("Save Database");

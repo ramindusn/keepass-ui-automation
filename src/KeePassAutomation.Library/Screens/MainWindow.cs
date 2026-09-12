@@ -4,6 +4,7 @@ using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using FlaUI.Core.Input;
 using FlaUI.Core.WindowsAPI;
+using KeePassAutomation.Framework.AppUnderTest;
 using KeePassAutomation.Framework.Core;
 
 namespace KeePassAutomation.Screens
@@ -16,12 +17,17 @@ namespace KeePassAutomation.Screens
         private const string MainMenu = "m_menuMain";
         private const string Toolbar = "m_toolMain";
 
-        public MainWindow(Window window)
+        private readonly AppSession _session;
+
+        public MainWindow(AppSession session)
         {
-            Window = window;
+            _session = session;
         }
 
-        public Window Window { get; }
+        public Window Window
+        {
+            get { return _session.MainWindow; }
+        }
 
         public string Title
         {

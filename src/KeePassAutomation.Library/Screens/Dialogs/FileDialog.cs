@@ -2,6 +2,7 @@ using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using FlaUI.Core.Input;
 using FlaUI.Core.WindowsAPI;
+using KeePassAutomation.Framework.AppUnderTest;
 using KeePassAutomation.Framework.Core;
 
 namespace KeePassAutomation.Screens.Dialogs
@@ -12,11 +13,11 @@ namespace KeePassAutomation.Screens.Dialogs
     {
         private static readonly string[] Titles = { "Create New Database", "Open Database File" };
 
-        private readonly MainWindow _owner;
+        private readonly AppSession _session;
 
-        public FileDialog(MainWindow owner)
+        public FileDialog(AppSession session)
         {
-            _owner = owner;
+            _session = session;
         }
 
         public void TypeFileName(string path)
@@ -37,7 +38,7 @@ namespace KeePassAutomation.Screens.Dialogs
 
         protected override AutomationElement Locate()
         {
-            return Waits.ForModalWindow(_owner.Window, Titles);
+            return _session.WaitForWindow(Titles);
         }
     }
 }
