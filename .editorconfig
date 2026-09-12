@@ -1,0 +1,68 @@
+# The house style: plain, traditional C#. dotnet format and the IDE enforce it; CI runs dotnet format.
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+charset = utf-8
+
+[*.{yml,yaml,json}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.cs]
+# Every file lists its own usings, System first.
+dotnet_sort_system_directives_first = true
+
+# Braces on every block, and a body for every member.
+csharp_prefer_braces = true:warning
+csharp_style_expression_bodied_methods = false:warning
+csharp_style_expression_bodied_constructors = false:warning
+csharp_style_expression_bodied_properties = false:warning
+csharp_style_expression_bodied_accessors = false:warning
+csharp_style_expression_bodied_indexers = false:warning
+csharp_style_expression_bodied_operators = false:warning
+csharp_style_expression_bodied_lambdas = true:silent
+
+# Block-bodied namespaces.
+csharp_style_namespace_declarations = block_scoped:warning
+
+# var everywhere, as the code already reads.
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
+
+# Explicit null handling: an if and a throw, not the shorthand forms.
+csharp_style_throw_expression = false:warning
+csharp_style_conditional_delegate_call = false:warning
+dotnet_style_null_propagation = false:warning
+dotnet_style_coalesce_expression = false:warning
+
+# Layout.
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+csharp_space_after_keywords_in_control_flow_statements = true
+
+# The same rules as build diagnostics, so the compiler enforces them too (TreatWarningsAsErrors).
+dotnet_diagnostic.IDE0011.severity = warning   # braces
+dotnet_diagnostic.IDE0021.severity = warning   # block body: constructor
+dotnet_diagnostic.IDE0022.severity = warning   # block body: method
+dotnet_diagnostic.IDE0023.severity = warning   # block body: operator
+dotnet_diagnostic.IDE0024.severity = warning   # block body: operator
+dotnet_diagnostic.IDE0025.severity = warning   # block body: property
+dotnet_diagnostic.IDE0026.severity = warning   # block body: indexer
+dotnet_diagnostic.IDE0027.severity = warning   # block body: accessor
+dotnet_diagnostic.IDE0160.severity = warning   # block-scoped namespace
+dotnet_diagnostic.IDE0016.severity = warning   # no throw expression
+dotnet_diagnostic.IDE0029.severity = warning   # no coalesce expression
+dotnet_diagnostic.IDE0030.severity = warning   # no coalesce expression
+dotnet_diagnostic.IDE0031.severity = warning   # no null propagation
+dotnet_diagnostic.IDE0055.severity = warning   # formatting

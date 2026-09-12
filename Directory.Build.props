@@ -1,0 +1,17 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <!-- Off so the code reads as plain C#: every file lists its own usings and no type is annotated. -->
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <!-- Fixed so the C# version can't drift with the SDK; C# 14 ships with the SDK 10 in global.json. -->
+    <LangVersion>14.0</LangVersion>
+    <!-- Lets the Windows-targeted projects compile on macOS/Linux; running the tests still needs Windows. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <!-- The style in .editorconfig is checked by the compiler, and a warning of any kind fails the build. -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+</Project>
