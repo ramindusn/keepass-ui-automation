@@ -101,12 +101,6 @@ Each test names the requirement it verifies, so the report shows it twice: the *
 groups tests under their requirements, which is the traceability matrix, and a test's own entry
 states the requirement above its evidence. On CI a requirement with no test fails the build.
 
-A run also records what it was. Before the first test, the suite writes down which KeePass binary
-it is about to drive, with that file's own SHA-256, the machine, the operating system build, the
-locale and the screen size, and the commit, workflow run and person behind it. Those facts appear
-on the report's Overview page, name the run on the trend, and travel with the evidence as
-`run.json`. A UI result is only worth as much as the record of what produced it.
-
 ## Settings
 
 Everything a run can be tuned with is in `tests/KeePassAutomation.Tests/Setup/TestConfig.cs`: the
