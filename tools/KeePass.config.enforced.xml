@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Applied on every start: no update check or first-run prompt, no reopening the last database,
+     and no new-database info dialogs (UIFlags 0x40000) or emergency-sheet prompt. -->
+<Configuration xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<Application>
+		<Start>
+			<CheckForUpdate>false</CheckForUpdate>
+			<CheckForUpdateConfigured>true</CheckForUpdateConfigured>
+			<OpenLastFile>false</OpenLastFile>
+		</Start>
+	</Application>
+	<UI>
+		<ShowEmSheetDialog>false</ShowEmSheetDialog>
+		<UIFlags>262144</UIFlags>
+	</UI>
+</Configuration>
