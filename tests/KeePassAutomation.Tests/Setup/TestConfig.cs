@@ -4,56 +4,57 @@ using NUnit.Framework;
 
 namespace KeePassAutomation.Tests.Setup
 {
-    // The settings every UI test runs with. Nothing here knows which app is under test.
+    // The settings every UI test runs with, in one place, the way playwright.config keeps them.
+    // Change a value here and nothing else needs to change. Nothing here knows which app is under test.
     public static class TestConfig
     {
-        // ---- Where files go ----------------------------------------------------------------
+        // Folder for what the tests leave behind, under the test run's working directory.
+        public const string OutputDir = "artifacts";
 
-        // Videos, screenshots and UIA trees, per test run. Uploaded by CI and attached in Allure.
-        public static readonly string ArtifactsDirectory = Path.Combine(TestContext.CurrentContext.WorkDirectory, "artifacts");
+        public static class Timeouts
+        {
+            // Finding a control or a window. Every wait in the framework polls up to this long.
+            public static readonly TimeSpan Element = TimeSpan.FromSeconds(10);
 
-        // ---- Timeouts ----------------------------------------------------------------------
+            // The main window appearing after launch.
+            public static readonly TimeSpan Launch = TimeSpan.FromSeconds(30);
 
-        // Finding a control or a window. Every wait in the framework polls up to this long.
-        public static readonly TimeSpan ElementTimeout = TimeSpan.FromSeconds(10);
+            // The app coming to the front, so that clicks reach it.
+            public static readonly TimeSpan Foreground = TimeSpan.FromSeconds(10);
 
-        // The main window appearing after launch.
-        public static readonly TimeSpan LaunchTimeout = TimeSpan.FromSeconds(30);
+            // Closing cleanly, before the process is killed.
+            public static readonly TimeSpan Shutdown = TimeSpan.FromSeconds(5);
 
-        // The app coming to the front, so that clicks reach it.
-        public static readonly TimeSpan ForegroundTimeout = TimeSpan.FromSeconds(10);
+            // The recorder releasing the video file after the test.
+            public static readonly TimeSpan VideoFinish = TimeSpan.FromSeconds(15);
+        }
 
-        // Closing cleanly, before the process is killed.
-        public static readonly TimeSpan ShutdownTimeout = TimeSpan.FromSeconds(5);
+        public static class Capture
+        {
+            // Off, On (every test), or RetainOnFailure (recorded, kept only when the test fails).
+            public static readonly VideoMode Video = VideoMode.On;
 
-        // The recorder releasing the video file after the test.
-        public static readonly TimeSpan VideoFinishTimeout = TimeSpan.FromSeconds(15);
+            // A screenshot of the screen as it was when a test failed.
+            public static readonly bool ScreenshotOnFailure = true;
 
-        // ---- Evidence ----------------------------------------------------------------------
+            // The UIA tree of the app's window as it was when a test failed, and how deep it goes.
+            public static readonly bool UiaTreeOnFailure = true;
+            public static readonly int UiaTreeDepth = 8;
+        }
 
-        public static readonly VideoMode Video = VideoMode.On;
-
-        // A screenshot and a UIA tree of the app as it was when a test failed.
-        public static readonly bool EvidenceOnFailure = true;
-
-        // How deep the UIA tree of a failure goes.
-        public static readonly int UiaTreeDepth = 8;
-
-        // ---- Environment -------------------------------------------------------------------
+        // ---- Derived from the environment; not meant to be edited ----
 
         // Set by GitHub Actions. On CI, evidence that cannot be produced fails the test;
         // locally it is only a warning, so the suite runs without ffmpeg.
         public static readonly bool IsCi = string.Equals(Environment.GetEnvironmentVariable("CI"), "true", StringComparison.OrdinalIgnoreCase);
+
+        public static readonly string ArtifactsDirectory = Path.Combine(TestContext.CurrentContext.WorkDirectory, OutputDir);
     }
 
     public enum VideoMode
     {
         Off,
-
-        // Every test leaves a video, named <Test>.Passed.mp4 or <Test>.Failed.mp4.
         On,
-
-        // Every test is recorded, but the video of a passed test is deleted.
         RetainOnFailure
     }
 }

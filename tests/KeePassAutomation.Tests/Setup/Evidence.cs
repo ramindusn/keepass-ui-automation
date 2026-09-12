@@ -15,7 +15,7 @@ namespace KeePassAutomation.Tests.Setup
         // Null when nothing is recorded: video is off, or ffmpeg is missing (a failure on CI).
         public static TestRecording StartVideo(string testName)
         {
-            if (TestConfig.Video == VideoMode.Off)
+            if (TestConfig.Capture.Video == VideoMode.Off)
             {
                 return null;
             }
@@ -47,7 +47,7 @@ namespace KeePassAutomation.Tests.Setup
 
             try
             {
-                return recording.Finish(TestConfig.VideoFinishTimeout);
+                return recording.Finish(TestConfig.Timeouts.VideoFinish);
             }
             catch (Exception ex)
             {
@@ -64,7 +64,7 @@ namespace KeePassAutomation.Tests.Setup
                 return;
             }
 
-            if (TestConfig.Video == VideoMode.RetainOnFailure && outcome != TestStatus.Failed)
+            if (TestConfig.Capture.Video == VideoMode.RetainOnFailure && outcome != TestStatus.Failed)
             {
                 File.Delete(recordedPath);
                 return;
@@ -76,13 +76,15 @@ namespace KeePassAutomation.Tests.Setup
         // Called while the app is still on screen: a screenshot of a closed app tells you nothing.
         public static void CaptureFailure(AutomationElement window, string testName)
         {
-            if (!TestConfig.EvidenceOnFailure)
+            if (TestConfig.Capture.ScreenshotOnFailure)
             {
-                return;
+                Attach(() => Screenshots.CaptureScreen(TestConfig.ArtifactsDirectory, testName), "screenshot");
             }
 
-            Attach(() => Screenshots.CaptureScreen(TestConfig.ArtifactsDirectory, testName), "screenshot");
-            Attach(() => UiaTreeDump.WriteTo(TestConfig.ArtifactsDirectory, testName + ".tree.txt", window, TestConfig.UiaTreeDepth), "UIA tree");
+            if (TestConfig.Capture.UiaTreeOnFailure)
+            {
+                Attach(() => UiaTreeDump.WriteTo(TestConfig.ArtifactsDirectory, testName + ".tree.txt", window, TestConfig.Capture.UiaTreeDepth), "UIA tree");
+            }
         }
 
         private static TestRecording NoVideo(string reason)

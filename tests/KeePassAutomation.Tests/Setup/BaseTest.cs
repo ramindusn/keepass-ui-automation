@@ -36,16 +36,16 @@ namespace KeePassAutomation.Tests.Setup
             _session = null;
             _recording = null;
 
-            Waits.Default = TestConfig.ElementTimeout;
+            Waits.Default = TestConfig.Timeouts.Element;
 
             // Started before launch, so a failed launch is on the video too.
             _recording = Evidence.StartVideo(TestContext.CurrentContext.Test.Name);
 
             _session = AppSession.Launch(
                 TestConfig.ArtifactsDirectory,
-                TestConfig.LaunchTimeout,
-                TestConfig.ForegroundTimeout,
-                TestConfig.ShutdownTimeout);
+                TestConfig.Timeouts.Launch,
+                TestConfig.Timeouts.Foreground,
+                TestConfig.Timeouts.Shutdown);
         }
 
         [TearDown]
