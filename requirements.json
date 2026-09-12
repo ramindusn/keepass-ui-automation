@@ -1,3 +1,4 @@
 [
-  { "id": "REQ-001", "description": "The application starts and presents its main window" }
+  { "id": "REQ-001", "description": "The application starts and presents its main window" },
+  { "id": "REQ-002", "description": "A database opens only with the correct master key" }
 ]
