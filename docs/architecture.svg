@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="640" viewBox="0 0 980 640" font-family="Helvetica, Arial, sans-serif" font-size="13">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4a5568"/>
+    </marker>
+  </defs>
+  <rect width="980" height="640" fill="#ffffff"/>
+
+  <!-- Tests project -->
+  <rect x="30" y="30" width="640" height="210" rx="10" fill="#eef4ff" stroke="#3b6fd8" stroke-width="1.5"/>
+  <text x="46" y="54" font-size="15" font-weight="700" fill="#1f3a93">tests/KeePassAutomation.Tests</text>
+
+  <rect x="46" y="70" width="300" height="152" rx="8" fill="#ffffff" stroke="#3b6fd8"/>
+  <text x="60" y="92" font-weight="700" fill="#1f3a93">Scenarios/   one class per window</text>
+  <text x="60" y="112" fill="#2d3748">BeforeEach creates the pages it uses:</text>
+  <text x="60" y="129" fill="#2d3748">new MainWindow(Session)</text>
+  <text x="60" y="146" fill="#2d3748">new FindDialog(Session)</text>
+  <text x="60" y="163" fill="#2d3748">new DatabaseTestData(Session)</text>
+  <text x="60" y="183" fill="#2d3748">Test body: every click and typed field visible</text>
+  <text x="60" y="199" fill="#2d3748">[Requirement("REQ-005", …)]  its requirement</text>
+  <text x="60" y="215" fill="#2d3748">[Category("Smoke")]  in the quick subset</text>
+
+  <rect x="362" y="70" width="292" height="152" rx="8" fill="#ffffff" stroke="#3b6fd8"/>
+  <text x="376" y="92" font-weight="700" fill="#1f3a93">Setup/</text>
+  <text x="376" y="114" fill="#2d3748"><tspan font-weight="700">BaseTest</tspan>   start and stop KeePass</text>
+  <text x="376" y="132" fill="#2d3748"><tspan font-weight="700">TestConfig</tspan>   timeouts, what to capture</text>
+  <text x="376" y="150" fill="#2d3748"><tspan font-weight="700">Evidence</tspan>   video, screenshot, UIA tree</text>
+  <text x="376" y="176" font-weight="700" fill="#1f3a93">TestData/</text>
+  <text x="376" y="194" fill="#2d3748"><tspan font-weight="700">DatabaseTestData</tspan>   a database of its own</text>
+
+  <!-- Screens -->
+  <rect x="30" y="270" width="640" height="120" rx="10" fill="#f0fbf4" stroke="#2f855a" stroke-width="1.5"/>
+  <text x="46" y="294" font-size="15" font-weight="700" fill="#22543d">src/…/Screens/   app-specific: the only place locators live</text>
+  <rect x="46" y="308" width="180" height="66" rx="8" fill="#ffffff" stroke="#2f855a"/>
+  <text x="60" y="330" font-weight="700" fill="#22543d">MainWindow</text>
+  <text x="60" y="349" fill="#2d3748">toolbar, menu bar,</text>
+  <text x="60" y="365" fill="#2d3748">group tree, entry list</text>
+  <rect x="242" y="308" width="412" height="66" rx="8" fill="#ffffff" stroke="#2f855a"/>
+  <text x="256" y="330" font-weight="700" fill="#22543d">Dialogs/   one page object per dialog</text>
+  <text x="256" y="349" fill="#2d3748">FileDialog, CreateMasterKeyDialog, DatabaseSettingsDialog,</text>
+  <text x="256" y="365" fill="#2d3748">OpenDatabaseDialog, EntryDialog, EntryViewer, FindDialog</text>
+
+  <!-- Framework -->
+  <rect x="30" y="420" width="640" height="120" rx="10" fill="#fff8ec" stroke="#c05621" stroke-width="1.5"/>
+  <text x="46" y="444" font-size="15" font-weight="700" fill="#7b341e">src/…/Framework/   app-agnostic: knows nothing about KeePass</text>
+  <rect x="46" y="458" width="300" height="74" rx="8" fill="#ffffff" stroke="#c05621"/>
+  <text x="60" y="478" font-weight="700" fill="#7b341e">Core</text>
+  <text x="60" y="496" fill="#2d3748">ScreenObject finds its own window</text>
+  <text x="60" y="512" fill="#2d3748">Element is a control, found on use</text>
+  <text x="60" y="528" fill="#2d3748">Waits is the only place that waits</text>
+  <rect x="362" y="458" width="292" height="74" rx="8" fill="#ffffff" stroke="#c05621"/>
+  <text x="376" y="480" font-weight="700" fill="#7b341e">AppUnderTest / Diagnostics</text>
+  <text x="376" y="499" fill="#2d3748">AppSession: launch, foreground, close</text>
+  <text x="376" y="515" fill="#2d3748">TestRecording, Screenshots, UiaTreeDump</text>
+
+  <!-- KeePass -->
+  <rect x="30" y="570" width="640" height="44" rx="10" fill="#edf2f7" stroke="#4a5568" stroke-width="1.5"/>
+  <text x="350" y="598" text-anchor="middle" font-weight="700" fill="#2d3748">FlaUI (UIA3)  →  Windows UI Automation  →  KeePass.exe</text>
+
+  <!-- dependency arrows -->
+  <line x1="350" y1="240" x2="350" y2="268" stroke="#4a5568" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="350" y1="390" x2="350" y2="418" stroke="#4a5568" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="350" y1="540" x2="350" y2="568" stroke="#4a5568" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="362" y="258" fill="#4a5568" font-size="12">references</text>
+  <text x="362" y="408" fill="#4a5568" font-size="12">references; Framework never imports Screens</text>
+  <text x="362" y="558" fill="#4a5568" font-size="12">drives</text>
+
+  <!-- Right column -->
+  <rect x="700" y="30" width="250" height="210" rx="10" fill="#fdf2f8" stroke="#b83280" stroke-width="1.5"/>
+  <text x="716" y="54" font-size="15" font-weight="700" fill="#702459">What a run leaves behind</text>
+  <text x="716" y="82" fill="#2d3748">An Allure result per test, with</text>
+  <text x="716" y="100" fill="#2d3748">its requirement as a feature</text>
+  <text x="716" y="126" fill="#2d3748">A video of every test</text>
+  <text x="716" y="144" fill="#2d3748">Screenshot + UIA tree of a failure</text>
+  <text x="716" y="172" fill="#2d3748">On CI: the build fails if a</text>
+  <text x="716" y="190" fill="#2d3748">requirement has no test; the report</text>
+  <text x="716" y="208" fill="#2d3748">is published to GitHub Pages</text>
+  <line x1="670" y1="135" x2="698" y2="135" stroke="#b83280" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="700" y="270" width="250" height="120" rx="10" fill="#f7fafc" stroke="#4a5568" stroke-width="1.5"/>
+  <text x="716" y="294" font-size="15" font-weight="700" fill="#2d3748">The rule</text>
+  <text x="716" y="322" fill="#2d3748">A test may name visible text:</text>
+  <text x="716" y="340" fill="#2d3748">a button caption, a dialog title.</text>
+  <text x="716" y="366" fill="#2d3748">A test never holds an automation id.</text>
+
+  <rect x="700" y="420" width="250" height="120" rx="10" fill="#f7fafc" stroke="#4a5568" stroke-width="1.5"/>
+  <text x="716" y="444" font-size="15" font-weight="700" fill="#2d3748">requirements.json</text>
+  <text x="716" y="472" fill="#2d3748">REQ-001 … REQ-005</text>
+  <text x="716" y="498" fill="#2d3748">Each test names the one it verifies;</text>
+  <text x="716" y="516" fill="#2d3748">the report's Behaviors view is</text>
+  <text x="716" y="532" fill="#2d3748">the traceability matrix.</text>
+</svg>
