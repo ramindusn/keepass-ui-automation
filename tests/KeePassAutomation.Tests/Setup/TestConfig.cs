@@ -5,7 +5,7 @@ using NUnit.Framework;
 namespace KeePassAutomation.Tests.Setup
 {
     // The settings every UI test runs with. Nothing here knows which app is under test.
-    public static class GlobalBaseConfig
+    public static class TestConfig
     {
         // ---- Where files go ----------------------------------------------------------------
 
@@ -44,5 +44,16 @@ namespace KeePassAutomation.Tests.Setup
         // Set by GitHub Actions. On CI, evidence that cannot be produced fails the test;
         // locally it is only a warning, so the suite runs without ffmpeg.
         public static readonly bool IsCi = string.Equals(Environment.GetEnvironmentVariable("CI"), "true", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public enum VideoMode
+    {
+        Off,
+
+        // Every test leaves a video, named <Test>.Passed.mp4 or <Test>.Failed.mp4.
+        On,
+
+        // Every test is recorded, but the video of a passed test is deleted.
+        RetainOnFailure
     }
 }

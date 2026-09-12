@@ -8,14 +8,14 @@ using NUnit.Framework.Interfaces;
 
 namespace KeePassAutomation.Tests.Setup
 {
-    // What a test leaves behind, as GlobalBaseConfig says: a video, and on failure a screenshot
+    // What a test leaves behind, as TestConfig says: a video, and on failure a screenshot
     // and a UIA tree, all attached to the test in Allure. BaseTest calls these around each test.
     public static class Evidence
     {
         // Null when nothing is recorded: video is off, or ffmpeg is missing (a failure on CI).
         public static TestRecording StartVideo(string testName)
         {
-            if (GlobalBaseConfig.Video == VideoMode.Off)
+            if (TestConfig.Video == VideoMode.Off)
             {
                 return null;
             }
@@ -29,7 +29,7 @@ namespace KeePassAutomation.Tests.Setup
 
             try
             {
-                return TestRecording.Start(ffmpeg, Path.Combine(GlobalBaseConfig.ArtifactsDirectory, FileNames.Sanitise(testName) + ".mp4"));
+                return TestRecording.Start(ffmpeg, Path.Combine(TestConfig.ArtifactsDirectory, FileNames.Sanitise(testName) + ".mp4"));
             }
             catch (Exception ex)
             {
@@ -47,7 +47,7 @@ namespace KeePassAutomation.Tests.Setup
 
             try
             {
-                return recording.Finish(GlobalBaseConfig.VideoFinishTimeout);
+                return recording.Finish(TestConfig.VideoFinishTimeout);
             }
             catch (Exception ex)
             {
@@ -64,7 +64,7 @@ namespace KeePassAutomation.Tests.Setup
                 return;
             }
 
-            if (GlobalBaseConfig.Video == VideoMode.RetainOnFailure && outcome != TestStatus.Failed)
+            if (TestConfig.Video == VideoMode.RetainOnFailure && outcome != TestStatus.Failed)
             {
                 File.Delete(recordedPath);
                 return;
@@ -76,18 +76,18 @@ namespace KeePassAutomation.Tests.Setup
         // Called while the app is still on screen: a screenshot of a closed app tells you nothing.
         public static void CaptureFailure(AutomationElement window, string testName)
         {
-            if (!GlobalBaseConfig.EvidenceOnFailure)
+            if (!TestConfig.EvidenceOnFailure)
             {
                 return;
             }
 
-            Attach(() => Screenshots.CaptureScreen(GlobalBaseConfig.ArtifactsDirectory, testName), "screenshot");
-            Attach(() => UiaTreeDump.WriteTo(GlobalBaseConfig.ArtifactsDirectory, testName + ".tree.txt", window, GlobalBaseConfig.UiaTreeDepth), "UIA tree");
+            Attach(() => Screenshots.CaptureScreen(TestConfig.ArtifactsDirectory, testName), "screenshot");
+            Attach(() => UiaTreeDump.WriteTo(TestConfig.ArtifactsDirectory, testName + ".tree.txt", window, TestConfig.UiaTreeDepth), "UIA tree");
         }
 
         private static TestRecording NoVideo(string reason)
         {
-            if (GlobalBaseConfig.IsCi)
+            if (TestConfig.IsCi)
             {
                 Assert.Fail("No video can be recorded: " + reason);
             }
@@ -98,7 +98,7 @@ namespace KeePassAutomation.Tests.Setup
 
         private static string RenameForOutcome(string recordedPath, string testName, TestStatus outcome)
         {
-            var finalPath = Path.Combine(GlobalBaseConfig.ArtifactsDirectory, FileNames.Sanitise(testName) + "." + outcome + ".mp4");
+            var finalPath = Path.Combine(TestConfig.ArtifactsDirectory, FileNames.Sanitise(testName) + "." + outcome + ".mp4");
             File.Move(recordedPath, finalPath, true);
             return finalPath;
         }
