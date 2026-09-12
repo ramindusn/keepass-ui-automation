@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
+using FlaUI.Core.Input;
+using FlaUI.Core.WindowsAPI;
 using KeePassAutomation.Framework.Core;
 using KeePassAutomation.Screens.Dialogs;
 
@@ -61,6 +63,24 @@ namespace KeePassAutomation.Screens
 
             group.Click();
             Waits.Until(tree, () => group.IsSelected, "group '" + groupName + "' to be selected");
+        }
+
+        // The toolbar, not the Entry menu: KeePass rebuilds that menu as it opens, and its items keep
+        // reporting the names they had before, so "Add Entry..." is not findable by name.
+        public EntryDialog AddEntry()
+        {
+            ClickToolbarButton("Add Entry");
+            return new EntryDialog(Waits.ForModalWindow(Window, EntryDialog.AddTitle));
+        }
+
+        // Selected and opened with Enter: a double-click lands mid-row, where the column under the
+        // pointer decides what happens.
+        public EntryDialog OpenEntry(string title)
+        {
+            FindByName(Find(EntryList), ControlType.ListItem, title).Click();
+            Keyboard.Type(VirtualKeyShort.RETURN);
+
+            return new EntryDialog(Waits.ForModalWindow(Window, EntryDialog.EditTitle));
         }
 
         // KeePass creates the database in memory only; call SaveDatabase to write it to disk.
