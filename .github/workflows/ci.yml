@@ -83,6 +83,18 @@ jobs:
           requirements.json
           tests/KeePassAutomation.Tests/bin/Release/net8.0-windows/allure-results
 
+      # The Trend widget needs the previous report's history, which the published report has.
+      # A first run, or a run on a fork, simply has no history yet.
+      - name: Fetch the previous report's history
+        if: always()
+        run: |
+          $history = "tests/KeePassAutomation.Tests/bin/Release/net8.0-windows/allure-results/history"
+          New-Item -ItemType Directory -Force $history | Out-Null
+          foreach ($file in "history.json", "history-trend.json", "duration-trend.json", "categories-trend.json", "retry-trend.json") {
+            try { Invoke-WebRequest "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/history/$file" -OutFile "$history/$file" }
+            catch { Write-Host "No previous $file" }
+          }
+
       # The report holds every test with its requirement, video, and on failure the screenshot
       # and UIA tree. Generated even when tests failed, which is when it is needed.
       - name: Generate the Allure report
@@ -106,3 +118,30 @@ jobs:
           name: test-evidence
           path: "**/artifacts/**"
           if-no-files-found: ignore
+
+  # The report for main goes to GitHub Pages. The deploy action uploads the files directly, so
+  # publishing makes no commit. It runs even when tests failed: that is when the report matters.
+  publish-report:
+    needs: ui-tests
+    if: always() && github.ref == 'refs/heads/main' && needs.ui-tests.result != 'skipped'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: allure-report
+          path: allure-report
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: allure-report
+
+      - id: deploy
+        uses: actions/deploy-pages@v5
