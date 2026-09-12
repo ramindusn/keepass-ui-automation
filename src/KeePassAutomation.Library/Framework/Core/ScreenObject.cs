@@ -4,9 +4,9 @@ using FlaUI.Core.Definitions;
 
 namespace KeePassAutomation.Framework.Core
 {
-    // A page object. It locates its own window when an action is called, so a test can hold one
+    // One window or dialog. It locates its own window when an action is called, so a test can hold one
     // object per window or dialog for its whole run, and every search is scoped to that window.
-    // A page declares its controls as Elements in its constructor and acts on them in its methods.
+    // A screen declares its controls as Elements in its constructor and acts on them in its methods.
     public abstract class ScreenObject
     {
         protected AutomationElement Root
