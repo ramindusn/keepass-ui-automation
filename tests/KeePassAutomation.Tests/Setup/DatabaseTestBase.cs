@@ -46,11 +46,26 @@ namespace KeePassAutomation.Tests.Setup
             }
         }
 
+        // Every step is written out: toolbar, Windows save dialog, master key, settings, then save.
         // Saved, so closing KeePass afterwards doesn't stop at a "save changes?" prompt.
         protected void CreateSavedDatabase()
         {
-            MainWindow.CreateDatabase(DatabasePath, MasterPassword);
-            MainWindow.SaveDatabase();
+            MainWindow.ClickToolbarButton("New Database");
+
+            var save = MainWindow.WaitForFileDialog("Create New Database");
+            save.TypeFileName(DatabasePath);
+            save.PressEnter();
+
+            var masterKey = MainWindow.WaitForCreateMasterKeyDialog();
+            masterKey.TypePassword(MasterPassword);
+            masterKey.TypeRepeatPassword(MasterPassword);
+            masterKey.ClickOk();
+
+            MainWindow.WaitForDatabaseSettingsDialog().ClickOk();
+            MainWindow.WaitForDatabaseToOpen();
+
+            MainWindow.ClickToolbarButton("Save Database");
+            MainWindow.WaitForDatabaseToBeSaved();
         }
     }
 }

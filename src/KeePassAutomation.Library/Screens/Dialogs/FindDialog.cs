@@ -12,9 +12,13 @@ namespace KeePassAutomation.Screens.Dialogs
         {
         }
 
-        public void SearchFor(string text)
+        public void SetSearchText(string text)
         {
             Find("m_tbSearch").AsTextBox().Text = text;
+        }
+
+        public void ClickOk()
+        {
             Find("m_btnOK").Click();
         }
     }

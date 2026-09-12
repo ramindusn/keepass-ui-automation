@@ -13,7 +13,7 @@ namespace KeePassAutomation.Screens.Dialogs
         {
         }
 
-        public void Choose(string path)
+        public void TypeFileName(string path)
         {
             var fileName = Waits.For(Root,
                 () => Root.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)
@@ -22,6 +22,10 @@ namespace KeePassAutomation.Screens.Dialogs
 
             fileName.Focus();
             fileName.AsTextBox().Enter(path);
+        }
+
+        public void PressEnter()
+        {
             Keyboard.Type(VirtualKeyShort.ENTER);
         }
     }

@@ -12,10 +12,18 @@ namespace KeePassAutomation.Screens.Dialogs
         {
         }
 
-        public void SetPassword(string password)
+        public void TypePassword(string password)
         {
             TypeInto("m_tbPassword", password);
+        }
+
+        public void TypeRepeatPassword(string password)
+        {
             TypeInto("m_tbRepeatPassword", password);
+        }
+
+        public void ClickOk()
+        {
             Find("m_btnOK").Click();
         }
     }

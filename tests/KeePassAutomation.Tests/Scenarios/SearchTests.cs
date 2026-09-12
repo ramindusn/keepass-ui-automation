@@ -13,7 +13,12 @@ namespace KeePassAutomation.Tests.Scenarios
             // A new database holds "Sample Entry" and "Sample Entry #2"; "#2" appears only in the second title.
             CreateSavedDatabase();
 
-            MainWindow.OpenFind().SearchFor("#2");
+            MainWindow.ClickMenuItem("Find", "Find...");
+
+            var find = MainWindow.WaitForFindDialog();
+            find.SetSearchText("#2");
+            find.ClickOk();
+
             MainWindow.WaitForEntryRow("Sample Entry #2");
 
             Assert.That(MainWindow.EntryTitles, Is.EquivalentTo(new[] { "Sample Entry #2" }));

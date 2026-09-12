@@ -11,9 +11,20 @@ namespace KeePassAutomation.Tests.Scenarios
         public void OpensWithTheCorrectMasterKey()
         {
             CreateSavedDatabase();
-            MainWindow.CloseDatabase();
 
-            MainWindow.OpenDatabase(DatabasePath).Unlock(MasterPassword);
+            MainWindow.ClickMenuItem("File", "Close");
+            MainWindow.WaitForDatabaseToClose();
+
+            MainWindow.ClickToolbarButton("Open Database");
+
+            var open = MainWindow.WaitForFileDialog("Open Database File");
+            open.TypeFileName(DatabasePath);
+            open.PressEnter();
+
+            var keyPrompt = MainWindow.WaitForOpenDatabaseDialog();
+            keyPrompt.TypePassword(MasterPassword);
+            keyPrompt.ClickOk();
+
             MainWindow.WaitForDatabaseToOpen();
 
             Assert.That(MainWindow.IsDatabaseOpen, Is.True);
