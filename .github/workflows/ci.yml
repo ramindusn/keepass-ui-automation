@@ -75,6 +75,27 @@ jobs:
           --blame-hang-timeout 5m
           --blame-hang-dump-type none
 
+      # Runs even if tests failed. Fails the job if a requirement has no test, or if there is no
+      # results file to check: a missing file must not pass quietly.
+      - name: Generate traceability matrix
+        if: always()
+        run: >
+          dotnet run --project tools/KeePassAutomation.MatrixGenerator
+          --configuration Release
+          --no-build
+          -- requirements.json tests/KeePassAutomation.Tests/ui-results.xml traceability-matrix.md
+
+      - name: Show traceability matrix on the run summary
+        if: always() && hashFiles('traceability-matrix.md') != ''
+        run: Get-Content traceability-matrix.md >> $env:GITHUB_STEP_SUMMARY
+
+      - name: Upload traceability matrix
+        if: always() && hashFiles('traceability-matrix.md') != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: traceability-matrix
+          path: traceability-matrix.md
+
       # Videos of every test, plus screenshots and UIA trees of failures.
       - name: Upload test evidence
         if: always()
