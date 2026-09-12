@@ -13,53 +13,21 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$repoRoot = Split-Path -Parent $PSScriptRoot
-$targetDirectory = Join-Path $repoRoot '.keepass'
+$targetDirectory = Join-Path (Split-Path -Parent $PSScriptRoot) '.keepass'
 $executable = Join-Path $targetDirectory 'KeePass.exe'
 
+if ($Force -or -not (Test-Path $executable)) {
+    & (Join-Path $PSScriptRoot 'Install-PinnedZip.ps1') `
+        -Url "https://sourceforge.net/projects/keepass/files/KeePass%202.x/$Version/KeePass-$Version.zip/download" `
+        -Sha256 $Sha256 `
+        -TargetDirectory $targetDirectory
+
+    if (-not (Test-Path $executable)) {
+        throw "The archive unpacked but $executable is missing, so its layout has changed."
+    }
+}
+
 # Runs every time, including when CI restores .keepass/ from its cache.
-function Copy-EnforcedConfig {
-    Copy-Item -Path (Join-Path $PSScriptRoot 'KeePass.config.enforced.xml') -Destination $targetDirectory -Force
-    Write-Host "Applied enforced test configuration."
-}
+Copy-Item -Path (Join-Path $PSScriptRoot 'KeePass.config.enforced.xml') -Destination $targetDirectory -Force
 
-if ((Test-Path $executable) -and -not $Force) {
-    Write-Host "KeePass already present at $executable (use -Force to re-download)."
-    Copy-EnforcedConfig
-    exit 0
-}
-
-$url = "https://sourceforge.net/projects/keepass/files/KeePass%202.x/$Version/KeePass-$Version.zip/download"
-$archive = Join-Path ([System.IO.Path]::GetTempPath()) "KeePass-$Version.zip"
-
-Write-Host "Downloading KeePass $Version..."
-$previousProgress = $ProgressPreference
-$ProgressPreference = 'SilentlyContinue'   # Progress rendering makes this ~10x slower on CI.
-try {
-    # SourceForge serves HTML, not the file, to browser-like user agents.
-    Invoke-WebRequest -Uri $url -OutFile $archive -UseBasicParsing -UserAgent 'Wget'
-}
-finally {
-    $ProgressPreference = $previousProgress
-}
-
-$actualHash = (Get-FileHash -Path $archive -Algorithm SHA256).Hash
-if ($actualHash -ne $Sha256.ToUpperInvariant()) {
-    Remove-Item $archive -Force
-    throw "SHA-256 mismatch for KeePass $Version.`n  expected: $($Sha256.ToUpperInvariant())`n  actual:   $actualHash"
-}
-
-Write-Host "Hash verified. Extracting to $targetDirectory..."
-if (Test-Path $targetDirectory) {
-    Remove-Item $targetDirectory -Recurse -Force
-}
-
-Expand-Archive -Path $archive -DestinationPath $targetDirectory -Force
-Remove-Item $archive -Force
-
-if (-not (Test-Path $executable)) {
-    throw "Extraction finished but $executable is missing."
-}
-
-Copy-EnforcedConfig
-Write-Host "KeePass $Version ready at $executable"
+Write-Host "KeePass $Version ready at $executable, with the enforced test configuration."

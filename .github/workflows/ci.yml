@@ -48,7 +48,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: .keepass
-          key: keepass-${{ hashFiles('tools/Get-KeePass.ps1') }}
+          key: keepass-${{ hashFiles('tools/Get-KeePass.ps1', 'tools/Install-PinnedZip.ps1') }}
 
       - name: Fetch KeePass
         run: pwsh tools/Get-KeePass.ps1
@@ -57,7 +57,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: .ffmpeg
-          key: ffmpeg-${{ hashFiles('tools/Get-FFmpeg.ps1') }}
+          key: ffmpeg-${{ hashFiles('tools/Get-FFmpeg.ps1', 'tools/Install-PinnedZip.ps1') }}
 
       - name: Fetch FFmpeg
         run: pwsh tools/Get-FFmpeg.ps1
