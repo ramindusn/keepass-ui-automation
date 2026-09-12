@@ -43,10 +43,16 @@ namespace KeePassAutomation.Framework.Core
         // so the owner's process is searched on the desktop too, excluding the owner itself.
         public static Window ForModalWindow(Window owner, string titleStart, TimeSpan? timeout = null)
         {
+            return ForModalWindow(owner, new[] { titleStart }, timeout);
+        }
+
+        // The same form can open under several titles ("Add Entry", "Edit Entry"); any of them matches.
+        public static Window ForModalWindow(Window owner, string[] titleStarts, TimeSpan? timeout = null)
+        {
             var processId = owner.Properties.ProcessId.Value;
 
-            return For(owner, () => FindModalWindow(owner, titleStart, processId),
-                "a dialog titled '" + titleStart + "…'",
+            return For(owner, () => FindModalWindow(owner, titleStarts, processId),
+                "a dialog titled '" + string.Join("…' or '", titleStarts) + "…'",
                 timeout);
         }
 
@@ -60,11 +66,11 @@ namespace KeePassAutomation.Framework.Core
             }
         }
 
-        private static Window FindModalWindow(Window owner, string titleStart, int processId)
+        private static Window FindModalWindow(Window owner, string[] titleStarts, int processId)
         {
             foreach (var modal in owner.ModalWindows)
             {
-                if (HasTitleStarting(modal, titleStart))
+                if (HasTitleStarting(modal, titleStarts))
                 {
                     return modal;
                 }
@@ -75,7 +81,7 @@ namespace KeePassAutomation.Framework.Core
 
             foreach (var window in onDesktop)
             {
-                if (!window.Equals(owner) && HasTitleStarting(window, titleStart))
+                if (!window.Equals(owner) && HasTitleStarting(window, titleStarts))
                 {
                     return window.AsWindow();
                 }
@@ -86,7 +92,7 @@ namespace KeePassAutomation.Framework.Core
 
         // A window that is still being created is already on the desktop but has no name yet, and
         // reading it throws. Read without throwing and skip it, so the poll simply tries again.
-        private static bool HasTitleStarting(AutomationElement window, string titleStart)
+        private static bool HasTitleStarting(AutomationElement window, string[] titleStarts)
         {
             var name = window.Properties.Name.ValueOrDefault;
 
@@ -95,7 +101,15 @@ namespace KeePassAutomation.Framework.Core
                 return false;
             }
 
-            return name.StartsWith(titleStart, StringComparison.Ordinal);
+            foreach (var titleStart in titleStarts)
+            {
+                if (name.StartsWith(titleStart, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static TimeSpan Limit(TimeSpan? timeout)

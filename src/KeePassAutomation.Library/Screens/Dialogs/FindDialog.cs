@@ -8,8 +8,11 @@ namespace KeePassAutomation.Screens.Dialogs
     {
         public const string Title = "Find";
 
-        public FindDialog(Window window) : base(window)
+        private readonly MainWindow _owner;
+
+        public FindDialog(MainWindow owner)
         {
+            _owner = owner;
         }
 
         public void SetSearchText(string text)
@@ -20,6 +23,11 @@ namespace KeePassAutomation.Screens.Dialogs
         public void ClickOk()
         {
             Find("m_btnOK").Click();
+        }
+
+        protected override AutomationElement Locate()
+        {
+            return Waits.ForModalWindow(_owner.Window, Title);
         }
     }
 }

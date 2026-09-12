@@ -5,7 +5,6 @@ using FlaUI.Core.Definitions;
 using FlaUI.Core.Input;
 using FlaUI.Core.WindowsAPI;
 using KeePassAutomation.Framework.Core;
-using KeePassAutomation.Screens.Dialogs;
 
 namespace KeePassAutomation.Screens
 {
@@ -17,7 +16,7 @@ namespace KeePassAutomation.Screens
         private const string MainMenu = "m_menuMain";
         private const string Toolbar = "m_toolMain";
 
-        public MainWindow(Window window) : base(window)
+        public MainWindow(Window window)
         {
             Window = window;
         }
@@ -110,36 +109,9 @@ namespace KeePassAutomation.Screens
             Waits.Until(Root, () => !Title.EndsWith("* - KeePass", StringComparison.Ordinal), "the database to be saved");
         }
 
-        // Windows' own open/save dialog; KeePass gives it a title per use, so the test names it.
-        public FileDialog WaitForFileDialog(string titleStart)
+        protected override AutomationElement Locate()
         {
-            return new FileDialog(Waits.ForModalWindow(Window, titleStart));
-        }
-
-        public CreateMasterKeyDialog WaitForCreateMasterKeyDialog()
-        {
-            return new CreateMasterKeyDialog(Waits.ForModalWindow(Window, CreateMasterKeyDialog.Title));
-        }
-
-        public DatabaseSettingsDialog WaitForDatabaseSettingsDialog()
-        {
-            return new DatabaseSettingsDialog(Waits.ForModalWindow(Window, DatabaseSettingsDialog.Title));
-        }
-
-        public OpenDatabaseDialog WaitForOpenDatabaseDialog()
-        {
-            return new OpenDatabaseDialog(Waits.ForModalWindow(Window, OpenDatabaseDialog.Title));
-        }
-
-        // "Add Entry" or "Edit Entry": the same form under two titles.
-        public EntryDialog WaitForEntryDialog(string titleStart)
-        {
-            return new EntryDialog(Waits.ForModalWindow(Window, titleStart));
-        }
-
-        public FindDialog WaitForFindDialog()
-        {
-            return new FindDialog(Waits.ForModalWindow(Window, FindDialog.Title));
+            return Window;
         }
 
         // An open dropdown is a popup, which WinForms parents under the menu item or under the window.

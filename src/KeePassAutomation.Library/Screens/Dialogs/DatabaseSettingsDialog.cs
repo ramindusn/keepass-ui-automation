@@ -8,13 +8,21 @@ namespace KeePassAutomation.Screens.Dialogs
     {
         public const string Title = "Configure New Database";
 
-        public DatabaseSettingsDialog(Window window) : base(window)
+        private readonly MainWindow _owner;
+
+        public DatabaseSettingsDialog(MainWindow owner)
         {
+            _owner = owner;
         }
 
         public void ClickOk()
         {
             Find("m_btnOK").Click();
+        }
+
+        protected override AutomationElement Locate()
+        {
+            return Waits.ForModalWindow(_owner.Window, Title);
         }
     }
 }

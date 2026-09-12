@@ -6,11 +6,17 @@ using KeePassAutomation.Framework.Core;
 
 namespace KeePassAutomation.Screens.Dialogs
 {
-    // Windows' own open/save dialog. Its file name box has Windows' fixed ID: 1001 (save) or 1148 (open).
+    // Windows' own open/save dialog, under the two titles KeePass gives it.
+    // Its file name box has Windows' fixed ID: 1001 (save) or 1148 (open).
     public sealed class FileDialog : ScreenObject
     {
-        public FileDialog(Window window) : base(window)
+        private static readonly string[] Titles = { "Create New Database", "Open Database File" };
+
+        private readonly MainWindow _owner;
+
+        public FileDialog(MainWindow owner)
         {
+            _owner = owner;
         }
 
         public void TypeFileName(string path)
@@ -27,6 +33,11 @@ namespace KeePassAutomation.Screens.Dialogs
         public void PressEnter()
         {
             Keyboard.Type(VirtualKeyShort.ENTER);
+        }
+
+        protected override AutomationElement Locate()
+        {
+            return Waits.ForModalWindow(_owner.Window, Titles);
         }
     }
 }

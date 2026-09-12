@@ -16,32 +16,25 @@ namespace KeePassAutomation.Tests.Scenarios
             // The toolbar, not the Entry menu: KeePass rebuilds that menu as it opens, and its items keep
             // reporting the names they had before, so "Add Entry..." is not findable by name.
             MainWindow.ClickToolbarButton("Add Entry");
-
-            var add = MainWindow.WaitForEntryDialog("Add Entry");
-            add.SetTitle("Before");
-            add.ClickOk();
+            EntryDialog.SetTitle("Before");
+            EntryDialog.ClickOk();
 
             // Selected and opened with Enter: a double-click lands mid-row, where the column under the
             // pointer decides what happens.
             MainWindow.SelectEntry("Before");
             MainWindow.PressEnter();
-
-            var edit = MainWindow.WaitForEntryDialog("Edit Entry");
-            edit.SetTitle("After");
-            edit.ClickOk();
+            EntryDialog.SetTitle("After");
+            EntryDialog.ClickOk();
 
             MainWindow.SelectEntry("After");
             MainWindow.PressEnter();
+            EntryDialog.SelectTab("History");
+            EntryDialog.SelectHistoryRow(EntryDialog.NewestEarlierVersionRow);
+            EntryDialog.ClickView();
 
-            var entry = MainWindow.WaitForEntryDialog("Edit Entry");
-            entry.SelectTab("History");
-            entry.SelectHistoryRow(EntryDialog.NewestEarlierVersionRow);
-            entry.ClickView();
-
-            var previous = entry.WaitForViewer();
-            var previousTitle = previous.Title;
-            previous.ClickCancel();
-            entry.ClickCancel();
+            var previousTitle = EntryViewer.EntryTitle;
+            EntryViewer.ClickCancel();
+            EntryDialog.ClickCancel();
 
             Assert.That(previousTitle, Is.EqualTo("Before"));
         }

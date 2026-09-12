@@ -4,24 +4,19 @@ using KeePassAutomation.Framework.Core;
 
 namespace KeePassAutomation.Screens.Dialogs
 {
-    // Add Entry / Edit Entry / View Entry (PwEntryForm): one form under three titles.
+    // Add Entry / Edit Entry (PwEntryForm): one form under two titles.
     public sealed class EntryDialog : ScreenObject
     {
-        public const string ViewerTitle = "View Entry (Read-Only)";
-
         // The history list opens with fixed "Dialog (unsaved)" and "Current" rows; versions follow, newest first.
         public const int NewestEarlierVersionRow = 2;
 
-        public EntryDialog(Window window) : base(window)
-        {
-            Window = window;
-        }
+        private static readonly string[] Titles = { "Add Entry", "Edit Entry" };
 
-        public Window Window { get; }
+        private readonly MainWindow _owner;
 
-        public string Title
+        public EntryDialog(MainWindow owner)
         {
-            get { return Find("m_tbTitle").AsTextBox().Text; }
+            _owner = owner;
         }
 
         public void SetTitle(string title)
@@ -40,15 +35,10 @@ namespace KeePassAutomation.Screens.Dialogs
             Waits.For(Root, () => HistoryRowOrNull(index), "row " + (index + 1) + " of the history list").Click();
         }
 
+        // Opens the selected history row read-only, in the EntryViewer.
         public void ClickView()
         {
             Find("m_btnHistoryView").Click();
-        }
-
-        // The selected history row opens read-only in another copy of this form.
-        public EntryDialog WaitForViewer()
-        {
-            return new EntryDialog(Waits.ForModalWindow(Window, ViewerTitle));
         }
 
         public void ClickOk()
@@ -59,6 +49,11 @@ namespace KeePassAutomation.Screens.Dialogs
         public void ClickCancel()
         {
             Find("m_btnCancel").Click();
+        }
+
+        protected override AutomationElement Locate()
+        {
+            return Waits.ForModalWindow(_owner.Window, Titles);
         }
 
         private AutomationElement HistoryRowOrNull(int index)

@@ -8,8 +8,11 @@ namespace KeePassAutomation.Screens.Dialogs
     {
         public const string Title = "Create Master Key";
 
-        public CreateMasterKeyDialog(Window window) : base(window)
+        private readonly MainWindow _owner;
+
+        public CreateMasterKeyDialog(MainWindow owner)
         {
+            _owner = owner;
         }
 
         public void TypePassword(string password)
@@ -25,6 +28,11 @@ namespace KeePassAutomation.Screens.Dialogs
         public void ClickOk()
         {
             Find("m_btnOK").Click();
+        }
+
+        protected override AutomationElement Locate()
+        {
+            return Waits.ForModalWindow(_owner.Window, Title);
         }
     }
 }

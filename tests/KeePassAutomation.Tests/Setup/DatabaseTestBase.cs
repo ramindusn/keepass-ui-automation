@@ -51,17 +51,12 @@ namespace KeePassAutomation.Tests.Setup
         protected void CreateSavedDatabase()
         {
             MainWindow.ClickToolbarButton("New Database");
-
-            var save = MainWindow.WaitForFileDialog("Create New Database");
-            save.TypeFileName(DatabasePath);
-            save.PressEnter();
-
-            var masterKey = MainWindow.WaitForCreateMasterKeyDialog();
-            masterKey.TypePassword(MasterPassword);
-            masterKey.TypeRepeatPassword(MasterPassword);
-            masterKey.ClickOk();
-
-            MainWindow.WaitForDatabaseSettingsDialog().ClickOk();
+            FileDialog.TypeFileName(DatabasePath);
+            FileDialog.PressEnter();
+            CreateMasterKeyDialog.TypePassword(MasterPassword);
+            CreateMasterKeyDialog.TypeRepeatPassword(MasterPassword);
+            CreateMasterKeyDialog.ClickOk();
+            DatabaseSettingsDialog.ClickOk();
             MainWindow.WaitForDatabaseToOpen();
 
             MainWindow.ClickToolbarButton("Save Database");

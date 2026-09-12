@@ -5,16 +5,17 @@ using FlaUI.Core.Input;
 
 namespace KeePassAutomation.Framework.Core
 {
-    // Takes an AutomationElement, not a Window, so windows, panels and dialogs share one base
-    // and every search is scoped to its own subtree.
+    // A page object. It locates its own window when an action is called, so a test can hold one
+    // object per window or dialog for its whole run, and every search is scoped to that window.
     public abstract class ScreenObject
     {
-        protected ScreenObject(AutomationElement root)
+        protected AutomationElement Root
         {
-            Root = root;
+            get { return Locate(); }
         }
 
-        protected AutomationElement Root { get; }
+        // The window this object stands for; for a dialog, found by title and waited for.
+        protected abstract AutomationElement Locate();
 
         protected AutomationElement Find(string automationId, TimeSpan? timeout = null)
         {

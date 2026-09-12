@@ -14,11 +14,8 @@ namespace KeePassAutomation.Tests.Scenarios
             CreateSavedDatabase();
 
             MainWindow.ClickMenuItem("Find", "Find...");
-
-            var find = MainWindow.WaitForFindDialog();
-            find.SetSearchText("#2");
-            find.ClickOk();
-
+            FindDialog.SetSearchText("#2");
+            FindDialog.ClickOk();
             MainWindow.WaitForEntryRow("Sample Entry #2");
 
             Assert.That(MainWindow.EntryTitles, Is.EquivalentTo(new[] { "Sample Entry #2" }));
