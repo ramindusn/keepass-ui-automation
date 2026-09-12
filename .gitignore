@@ -10,5 +10,7 @@ obj/
 # ffmpeg, downloaded by tools/Get-FFmpeg.ps1 to encode test videos — never committed
 .ffmpeg/
 
-# Screenshots, UIA tree dumps and test result XML
+# Screenshots, UIA tree dumps and videos, and the Allure results and report built from them
 artifacts/
+allure-results/
+allure-report/
