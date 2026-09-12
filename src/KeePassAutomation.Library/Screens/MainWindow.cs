@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using KeePassAutomation.Framework.Core;
@@ -9,6 +10,7 @@ namespace KeePassAutomation.Screens
     public sealed class MainWindow : ScreenObject
     {
         private const string GroupTree = "m_tvGroups";
+        private const string EntryList = "m_lvEntries";
         private const string MainMenu = "m_menuMain";
         private const string Toolbar = "m_toolMain";
 
@@ -33,6 +35,32 @@ namespace KeePassAutomation.Screens
         public bool IsDatabaseOpen
         {
             get { return Find(GroupTree).FindFirstChild(cf => cf.ByControlType(ControlType.TreeItem)) != null; }
+        }
+
+        // Each row's name is its Title column.
+        public IReadOnlyList<string> EntryTitles
+        {
+            get
+            {
+                var titles = new List<string>();
+
+                foreach (var row in FindRows(EntryList))
+                {
+                    titles.Add(row.Name);
+                }
+
+                return titles;
+            }
+        }
+
+        // Groups have no AutomationId, so they're found by name inside the tree.
+        public void SelectGroup(string groupName)
+        {
+            var tree = Find(GroupTree);
+            var group = FindByName(tree, ControlType.TreeItem, groupName).AsTreeItem();
+
+            group.Click();
+            Waits.Until(tree, () => group.IsSelected, "group '" + groupName + "' to be selected");
         }
 
         // KeePass creates the database in memory only; call SaveDatabase to write it to disk.
