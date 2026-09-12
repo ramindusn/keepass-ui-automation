@@ -1,0 +1,14 @@
+bin/
+obj/
+.vs/
+.idea/
+*.user
+
+# KeePass build under test, downloaded by tools/Get-KeePass.ps1 — never committed
+.keepass/
+
+# ffmpeg, downloaded by tools/Get-FFmpeg.ps1 to encode test videos — never committed
+.ffmpeg/
+
+# Screenshots, UIA tree dumps and test result XML
+artifacts/
