@@ -1,3 +1,4 @@
+using KeePassAutomation.Screens;
 using KeePassAutomation.Screens.Dialogs;
 using KeePassAutomation.Tests.Setup;
 using KeePassAutomation.Tests.Traceability;
@@ -7,12 +8,14 @@ namespace KeePassAutomation.Tests.Scenarios
 {
     public class DatabaseTests : DatabaseTestBase
     {
+        private MainWindow _mainWindow;
         private FileDialog _fileDialog;
         private OpenDatabaseDialog _openDatabaseDialog;
 
         [SetUp]
-        public void CreatePages()
+        public void BeforeEach()
         {
+            _mainWindow = new MainWindow(Session);
             _fileDialog = new FileDialog(Session);
             _openDatabaseDialog = new OpenDatabaseDialog(Session);
         }
@@ -22,17 +25,17 @@ namespace KeePassAutomation.Tests.Scenarios
         public void OpensWithTheCorrectMasterKey()
         {
             CreateSavedDatabase();
-            MainWindow.ClickMenuItem("File", "Close");
-            MainWindow.WaitForDatabaseToClose();
+            _mainWindow.ClickMenuItem("File", "Close");
+            _mainWindow.WaitForDatabaseToClose();
 
-            MainWindow.ClickToolbarButton("Open Database");
+            _mainWindow.ClickToolbarButton("Open Database");
             _fileDialog.TypeFileName(DatabasePath);
             _fileDialog.PressEnter();
             _openDatabaseDialog.TypePassword(MasterPassword);
             _openDatabaseDialog.ClickOk();
-            MainWindow.WaitForDatabaseToOpen();
+            _mainWindow.WaitForDatabaseToOpen();
 
-            Assert.That(MainWindow.IsDatabaseOpen, Is.True);
+            Assert.That(_mainWindow.IsDatabaseOpen, Is.True);
         }
     }
 }

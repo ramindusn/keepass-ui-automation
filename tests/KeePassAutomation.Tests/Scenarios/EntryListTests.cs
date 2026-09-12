@@ -1,3 +1,4 @@
+using KeePassAutomation.Screens;
 using KeePassAutomation.Tests.Setup;
 using KeePassAutomation.Tests.Traceability;
 using NUnit.Framework;
@@ -6,6 +7,14 @@ namespace KeePassAutomation.Tests.Scenarios
 {
     public class EntryListTests : DatabaseTestBase
     {
+        private MainWindow _mainWindow;
+
+        [SetUp]
+        public void BeforeEach()
+        {
+            _mainWindow = new MainWindow(Session);
+        }
+
         [Test]
         [Requirement("REQ-003", "Selecting a group lists the entries it contains")]
         public void SelectingAGroupListsItsEntries()
@@ -13,11 +22,11 @@ namespace KeePassAutomation.Tests.Scenarios
             // A new database has two sample entries in its top group and six empty groups under it.
             CreateSavedDatabase();
 
-            MainWindow.SelectGroup("General");
-            var inGeneral = MainWindow.EntryTitles;
+            _mainWindow.SelectGroup("General");
+            var inGeneral = _mainWindow.EntryTitles;
 
-            MainWindow.SelectGroup(TopGroupName);
-            var inTopGroup = MainWindow.EntryTitles;
+            _mainWindow.SelectGroup(TopGroupName);
+            var inTopGroup = _mainWindow.EntryTitles;
 
             using (Assert.EnterMultipleScope())
             {

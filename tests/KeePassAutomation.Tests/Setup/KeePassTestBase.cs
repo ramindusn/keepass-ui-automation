@@ -4,7 +4,6 @@ using Allure.Net.Commons;
 using Allure.NUnit;
 using KeePassAutomation.Framework.AppUnderTest;
 using KeePassAutomation.Framework.Diagnostics;
-using KeePassAutomation.Screens;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 
@@ -34,8 +33,6 @@ namespace KeePassAutomation.Tests.Setup
             }
         }
 
-        protected MainWindow MainWindow { get; private set; }
-
         protected static string ArtifactsDirectory { get; } =
             Path.Combine(TestContext.CurrentContext.WorkDirectory, "artifacts");
 
@@ -54,7 +51,6 @@ namespace KeePassAutomation.Tests.Setup
             _recording = StartRecording(TestContext.CurrentContext.Test.Name);
 
             _session = AppSession.Launch(ArtifactsDirectory);
-            MainWindow = new MainWindow(_session);
         }
 
         [TearDown]
