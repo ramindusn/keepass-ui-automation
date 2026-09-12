@@ -1,0 +1,78 @@
+name: ci
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# A newer push to the same branch supersedes the run in progress.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Style and build on Linux first: cheap, and the Windows runner is not spent on code that fails here.
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Check formatting and code style
+        run: dotnet format KeePassAutomation.sln --verify-no-changes
+
+  ui-tests:
+    needs: lint
+    runs-on: windows-latest
+    # A hang on an unexpected dialog would otherwise hold the runner for 6 hours.
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # SDK 10 builds (pinned by global.json); the tests run on .NET 8.
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      # Keyed on the fetch script, so bumping the version there is the whole change.
+      - name: Cache KeePass
+        uses: actions/cache@v6
+        with:
+          path: .keepass
+          key: keepass-${{ hashFiles('tools/Get-KeePass.ps1') }}
+
+      - name: Fetch KeePass
+        run: pwsh tools/Get-KeePass.ps1
+
+      - name: Build
+        run: dotnet build KeePassAutomation.sln --configuration Release
+
+      # The hang timeout names and stops a stuck test instead of timing out the whole job.
+      - name: Run UI tests
+        run: >
+          dotnet test KeePassAutomation.sln
+          --configuration Release
+          --no-build
+          --logger "nunit;LogFilePath=ui-results.xml"
+          --blame-hang-timeout 5m
+          --blame-hang-dump-type none
+
+      # Whatever the tests wrote to artifacts/, plus the results file.
+      - name: Upload test evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-evidence
+          path: |
+            **/artifacts/**
+            **/ui-results.xml
+          if-no-files-found: ignore
