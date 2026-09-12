@@ -8,8 +8,8 @@ using NUnit.Framework.Interfaces;
 
 namespace KeePassAutomation.Tests.Setup
 {
-    // A fresh KeePass before each test, closed after it. Recording and evidence come from
-    // GlobalBaseConfig, so this class only knows how to start and stop the app.
+    // A fresh KeePass before each test, closed after it, with the settings from GlobalBaseConfig
+    // and the evidence from Evidence. This class only knows how to start and stop the app.
     [AllureNUnit]
     public abstract class BaseTest
     {
@@ -39,9 +39,13 @@ namespace KeePassAutomation.Tests.Setup
             Waits.Default = GlobalBaseConfig.ElementTimeout;
 
             // Started before launch, so a failed launch is on the video too.
-            _recording = GlobalBaseConfig.StartRecording(TestContext.CurrentContext.Test.Name);
+            _recording = Evidence.StartVideo(TestContext.CurrentContext.Test.Name);
 
-            _session = AppSession.Launch(GlobalBaseConfig.ArtifactsDirectory);
+            _session = AppSession.Launch(
+                GlobalBaseConfig.ArtifactsDirectory,
+                GlobalBaseConfig.LaunchTimeout,
+                GlobalBaseConfig.ForegroundTimeout,
+                GlobalBaseConfig.ShutdownTimeout);
         }
 
         [TearDown]
@@ -53,10 +57,10 @@ namespace KeePassAutomation.Tests.Setup
             // Failure evidence first, while KeePass is still on screen.
             if (_session != null && outcome == TestStatus.Failed)
             {
-                GlobalBaseConfig.CaptureFailureEvidence(_session.MainWindow, testName);
+                Evidence.CaptureFailure(_session.MainWindow, testName);
             }
 
-            var video = GlobalBaseConfig.FinishRecording(_recording);
+            var video = Evidence.StopVideo(_recording);
             _recording = null;
 
             if (_session != null)
@@ -65,10 +69,7 @@ namespace KeePassAutomation.Tests.Setup
                 _session = null;
             }
 
-            if (video != null)
-            {
-                GlobalBaseConfig.AttachVideo(video, testName, outcome);
-            }
+            Evidence.KeepVideo(video, testName, outcome);
         }
     }
 }
