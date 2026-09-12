@@ -36,7 +36,7 @@ Write-Host "Downloading KeePass $Version..."
 $previousProgress = $ProgressPreference
 $ProgressPreference = 'SilentlyContinue'   # Progress rendering makes this ~10x slower on CI.
 try {
-    # SourceForge serves an HTML page, not the file, to browser-like user agents.
+    # SourceForge serves HTML, not the file, to browser-like user agents.
     Invoke-WebRequest -Uri $url -OutFile $archive -UseBasicParsing -UserAgent 'Wget'
 }
 finally {

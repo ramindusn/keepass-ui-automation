@@ -5,7 +5,7 @@ using FlaUI.Core.Input;
 namespace KeePassAutomation.Framework.Core
 {
     // A control described by how to find it, and found again on every action. Nothing is looked up
-    // when it is declared, so a page can list its controls before its window exists. Every lookup
+    // when it is declared, so a screen can list its controls before its window exists. Every lookup
     // waits, so no action needs its own wait.
     public sealed class Element
     {

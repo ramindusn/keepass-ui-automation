@@ -36,7 +36,7 @@ namespace KeePassAutomation.Screens.Dialogs
             _title.SetText(title);
         }
 
-        // Tabs are named by their caption, not by the name of the page behind them.
+        // Tabs are named by their caption, not by the control name behind them.
         public void SelectTab(string caption)
         {
             ByName(Tabs, ControlType.TabItem, caption).Select();

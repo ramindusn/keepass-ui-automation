@@ -11,10 +11,10 @@ checks the download against the SHA-256 KeePass publishes, and it is never commi
 
 ![Architecture](docs/architecture.png)
 
-- **Scenarios** are the tests, one class per window. A test creates the pages it uses in
+- **Scenarios** are the tests, one class per window. A test creates the screens it uses in
   `BeforeEach` and then lists every click and typed field. Nothing is hidden between a test line
   and the click it names.
-- **Screens** are page objects, one per window or dialog. Each finds its own window by title
+- **Screens** are one class per window or dialog. Each finds its own window by title
   when an action is called, declares its controls, and has one method per action. A screen never
   drives another screen. This is the only place an automation id may appear.
 - **Setup** is three files: `BaseTest` starts and stops KeePass, `TestConfig` holds every setting
@@ -69,7 +69,7 @@ On CI the report for `main` is published after every run:
 
 Each test carries the requirement it verifies, so the report shows it in two places: the
 **Behaviors** view groups the tests under their requirements, which is the traceability matrix,
-and a test's own page states the requirement id and wording above the steps, the video and, on
+and a test's own entry in the report states the requirement id and wording above the steps, the video and, on
 failure, the screenshot and UIA tree.
 
 ### Settings
@@ -86,7 +86,7 @@ value there and nothing else needs to change.
    from the `DumpUiaTree` diagnostic test (`dotnet test --filter Name=DumpUiaTree`) or from
    Accessibility Insights.
 
-2. **Write the test.** Derive from `BaseTest`, create your pages in `BeforeEach`, and write the
+2. **Write the test.** Derive from `BaseTest`, create your screens in `BeforeEach`, and write the
    steps. If the test needs a database, create `DatabaseTestData` in `BeforeEach` and delete it in
    `AfterEach`.
 
