@@ -5,6 +5,7 @@ using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using FlaUI.Core.Tools;
 using FlaUI.UIA3;
+using KeePassAutomation.Framework.Diagnostics;
 
 namespace KeePassAutomation.Framework.AppUnderTest
 {
@@ -26,7 +27,8 @@ namespace KeePassAutomation.Framework.AppUnderTest
 
         public Window MainWindow { get; }
 
-        public static AppSession Launch()
+        // Launch failures happen in SetUp, before TearDown has a session, so evidence is captured here.
+        public static AppSession Launch(string evidenceDirectory = null)
         {
             var application = Application.Launch(KeePassPackage.FindExecutable());
             var automation = new UIA3Automation();
@@ -40,7 +42,7 @@ namespace KeePassAutomation.Framework.AppUnderTest
                 return new AppSession(application, automation, mainWindow);
             }
 
-            var failure = DescribeLaunchFailure(application, automation);
+            var failure = DescribeLaunchFailure(application, automation, evidenceDirectory);
 
             automation.Dispose();
             Kill(application);
@@ -98,7 +100,7 @@ namespace KeePassAutomation.Framework.AppUnderTest
             return automation.FocusedElement().Properties.ProcessId.ValueOrDefault == processId;
         }
 
-        private static string DescribeLaunchFailure(Application application, UIA3Automation automation)
+        private static string DescribeLaunchFailure(Application application, UIA3Automation automation, string evidenceDirectory)
         {
             var report = new StringBuilder()
                 .AppendLine("KeePass launched but no main window appeared within "
@@ -122,6 +124,13 @@ namespace KeePassAutomation.Framework.AppUnderTest
                 report.AppendLine("  <could not list windows: " + ex.GetType().Name + ">");
             }
 
+            if (evidenceDirectory != null)
+            {
+                report.AppendLine()
+                    .AppendLine(TrySave(() => Screenshots.CaptureScreen(evidenceDirectory, "launch-failure"), "screenshot"))
+                    .AppendLine(TrySave(() => UiaTreeDump.WriteTo(evidenceDirectory, "launch-failure.desktop.txt", automation.GetDesktop(), 3), "desktop tree"));
+            }
+
             return report.ToString();
         }
 
@@ -139,6 +148,18 @@ namespace KeePassAutomation.Framework.AppUnderTest
             catch (Exception ex)
             {
                 return "Could not read the process state: " + ex.GetType().Name + ".";
+            }
+        }
+
+        private static string TrySave(Func<string> save, string what)
+        {
+            try
+            {
+                return "Saved " + what + ": " + save();
+            }
+            catch (Exception ex)
+            {
+                return "Could not save " + what + ": " + ex.Message;
             }
         }
 
