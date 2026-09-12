@@ -4,25 +4,18 @@ using KeePassAutomation.Framework.Core;
 
 namespace KeePassAutomation.Screens.Dialogs
 {
-    // The master key prompt (KeyPromptForm), titled "Open Database - <file name>".
-    public sealed class OpenDatabaseDialog : ScreenObject
+    // The settings step of creating a new database (DatabaseSettingsForm); the defaults are accepted.
+    public sealed class DatabaseSettingsDialog : ScreenObject
     {
-        public const string Title = "Open Database";
+        public const string Title = "Configure New Database";
 
         private readonly AppSession _session;
-        private readonly Element _password;
         private readonly Element _ok;
 
-        public OpenDatabaseDialog(AppSession session)
+        public DatabaseSettingsDialog(AppSession session)
         {
             _session = session;
-            _password = ById("m_tbPassword");
             _ok = ById("m_btnOK");
-        }
-
-        public void TypePassword(string masterPassword)
-        {
-            _password.Type(masterPassword);
         }
 
         public void ClickOk()

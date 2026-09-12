@@ -5,20 +5,21 @@ using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using FlaUI.Core.Tools;
 using FlaUI.UIA3;
+using KeePassAutomation.Framework.Core;
 using KeePassAutomation.Framework.Diagnostics;
 
 namespace KeePassAutomation.Framework.AppUnderTest
 {
     public sealed class AppSession : IDisposable
     {
-        private static readonly TimeSpan MainWindowTimeout = TimeSpan.FromSeconds(30);
-        private static readonly TimeSpan ForegroundTimeout = TimeSpan.FromSeconds(10);
+        private readonly TimeSpan _shutdownTimeout;
 
-        private AppSession(Application application, UIA3Automation automation, Window mainWindow)
+        private AppSession(Application application, UIA3Automation automation, Window mainWindow, TimeSpan shutdownTimeout)
         {
             Application = application;
             Automation = automation;
             MainWindow = mainWindow;
+            _shutdownTimeout = shutdownTimeout;
         }
 
         public Application Application { get; }
@@ -27,22 +28,30 @@ namespace KeePassAutomation.Framework.AppUnderTest
 
         public Window MainWindow { get; }
 
+        // Waits for a window of this app by the start of its title; any of the given titles matches.
+        public Window WaitForWindow(params string[] titleStarts)
+        {
+            return Waits.ForWindow(MainWindow, titleStarts);
+        }
+
         // Launch failures happen in SetUp, before TearDown has a session, so evidence is captured here.
-        public static AppSession Launch(string evidenceDirectory = null)
+        // The timeouts are the caller's policy: how long to wait for the main window, for the app to
+        // come to the front, and for it to close before it is killed.
+        public static AppSession Launch(string evidenceDirectory, TimeSpan launchTimeout, TimeSpan foregroundTimeout, TimeSpan shutdownTimeout)
         {
             var application = Application.Launch(KeePassPackage.FindExecutable());
             var automation = new UIA3Automation();
 
             // Without a timeout FlaUI waits forever, so one unexpected dialog would hang the run.
-            var mainWindow = application.GetMainWindow(automation, MainWindowTimeout);
+            var mainWindow = application.GetMainWindow(automation, launchTimeout);
 
             if (mainWindow != null)
             {
-                BringToFront(mainWindow, automation, application.ProcessId);
-                return new AppSession(application, automation, mainWindow);
+                BringToFront(mainWindow, automation, application.ProcessId, foregroundTimeout);
+                return new AppSession(application, automation, mainWindow, shutdownTimeout);
             }
 
-            var failure = DescribeLaunchFailure(application, automation, evidenceDirectory);
+            var failure = DescribeLaunchFailure(application, automation, evidenceDirectory, launchTimeout);
 
             automation.Dispose();
             Kill(application);
@@ -60,9 +69,9 @@ namespace KeePassAutomation.Framework.AppUnderTest
 
         // Clicks are real mouse events, so they land on whichever window is in front — on CI that was the
         // runner's console, and the click never reached KeePass.
-        private static void BringToFront(Window mainWindow, UIA3Automation automation, int processId)
+        private static void BringToFront(Window mainWindow, UIA3Automation automation, int processId, TimeSpan timeout)
         {
-            Retry.WhileFalse(() => TryBringToFront(mainWindow, automation, processId), ForegroundTimeout);
+            Retry.WhileFalse(() => TryBringToFront(mainWindow, automation, processId), timeout);
         }
 
         // Windows refuses foreground to a process it did not just activate, and says so only by leaving
@@ -100,11 +109,11 @@ namespace KeePassAutomation.Framework.AppUnderTest
             return automation.FocusedElement().Properties.ProcessId.ValueOrDefault == processId;
         }
 
-        private static string DescribeLaunchFailure(Application application, UIA3Automation automation, string evidenceDirectory)
+        private static string DescribeLaunchFailure(Application application, UIA3Automation automation, string evidenceDirectory, TimeSpan launchTimeout)
         {
             var report = new StringBuilder()
                 .AppendLine("KeePass launched but no main window appeared within "
-                    + MainWindowTimeout.TotalSeconds.ToString("0") + "s.")
+                    + launchTimeout.TotalSeconds.ToString("0") + "s.")
                 .AppendLine(ProcessState(application))
                 .AppendLine()
                 .AppendLine("Top-level windows on the desktop (* = belongs to KeePass):");
@@ -170,7 +179,7 @@ namespace KeePassAutomation.Framework.AppUnderTest
             {
                 Application.Close();
 
-                if (Retry.WhileFalse(() => Application.HasExited, TimeSpan.FromSeconds(5)).Success)
+                if (Retry.WhileFalse(() => Application.HasExited, _shutdownTimeout).Success)
                 {
                     return;
                 }

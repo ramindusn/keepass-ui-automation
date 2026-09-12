@@ -1,69 +1,76 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
+using KeePassAutomation.Framework.AppUnderTest;
 using KeePassAutomation.Framework.Core;
 
 namespace KeePassAutomation.Screens.Dialogs
 {
-    // Add Entry / Edit Entry (PwEntryForm).
+    // Add Entry / Edit Entry (PwEntryForm): one form under two titles.
     public sealed class EntryDialog : ScreenObject
     {
-        public const string AddTitle = "Add Entry";
-        public const string EditTitle = "Edit Entry";
-
         // The history list opens with fixed "Dialog (unsaved)" and "Current" rows; versions follow, newest first.
-        private const int NewestEarlierVersion = 2;
+        public const int NewestEarlierVersionRow = 2;
 
-        public EntryDialog(Window window) : base(window)
+        private const string Tabs = "m_tabMain";
+        private const string HistoryList = "m_lvHistory";
+
+        private static readonly string[] Titles = { "Add Entry", "Edit Entry" };
+
+        private readonly AppSession _session;
+        private readonly Element _title;
+        private readonly Element _viewHistory;
+        private readonly Element _ok;
+        private readonly Element _cancel;
+
+        public EntryDialog(AppSession session)
         {
-            Window = window;
+            _session = session;
+            _title = ById("m_tbTitle");
+            _viewHistory = ById("m_btnHistoryView");
+            _ok = ById("m_btnOK");
+            _cancel = ById("m_btnCancel");
         }
 
-        public Window Window { get; }
-
-        public EntryDialog SetTitle(string title)
+        public void SetTitle(string title)
         {
-            Find("m_tbTitle").AsTextBox().Text = title;
-            return this;
-        }
-
-        public void Save()
-        {
-            Find("m_btnOK").Click();
-        }
-
-        public void Cancel()
-        {
-            Find("m_btnCancel").Click();
-        }
-
-        // Opens the newest earlier version from the History tab and returns its title.
-        public string PreviousVersionTitle()
-        {
-            SelectTab("History");
-            HistoryRowAt(NewestEarlierVersion).Click();
-
-            Find("m_btnHistoryView").Click();
-            var viewer = Waits.ForModalWindow(Window, "View Entry (Read-Only)");
-            var title = Waits.ForDescendant(viewer, "m_tbTitle").AsTextBox().Text;
-            Waits.ForDescendant(viewer, "m_btnCancel").Click();
-
-            return title;
+            _title.SetText(title);
         }
 
         // Tabs are named by their caption, not by the name of the page behind them.
-        private void SelectTab(string caption)
+        public void SelectTab(string caption)
         {
-            FindByName(Find("m_tabMain"), ControlType.TabItem, caption).AsTabItem().Select();
+            ByName(Tabs, ControlType.TabItem, caption).Select();
         }
 
-        private AutomationElement HistoryRowAt(int index)
+        public void SelectHistoryRow(int index)
         {
-            return Waits.For(Root, () => HistoryRowOrNull(index), "row " + (index + 1) + " of the history list");
+            Waits.For(Root, () => HistoryRowOrNull(index), "row " + (index + 1) + " of the history list").Click();
+        }
+
+        // Opens the selected history row read-only, in the EntryViewer.
+        public void ClickView()
+        {
+            _viewHistory.Click();
+        }
+
+        public void ClickOk()
+        {
+            _ok.Click();
+        }
+
+        public void ClickCancel()
+        {
+            _cancel.Click();
+        }
+
+        protected override AutomationElement Locate()
+        {
+            return _session.WaitForWindow(Titles);
         }
 
         private AutomationElement HistoryRowOrNull(int index)
         {
-            var rows = FindRows("m_lvHistory");
+            var rows = FindRows(HistoryList);
 
             if (index >= rows.Length)
             {

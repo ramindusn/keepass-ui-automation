@@ -41,12 +41,15 @@ namespace KeePassAutomation.Framework.Core
 
         // Matches the start of the title. Owned dialogs aren't always under their owner in the UIA tree,
         // so the owner's process is searched on the desktop too, excluding the owner itself.
-        public static Window ForModalWindow(Window owner, string titleStart, TimeSpan? timeout = null)
+        // A window of the app by the start of its title; a form that opens under several titles
+        // ("Add Entry", "Edit Entry") matches any of them. An owned dialog can sit under its owner in
+        // the UIA tree, on the desktop, or under another dialog, so all three places are searched.
+        public static Window ForWindow(Window owner, string[] titleStarts, TimeSpan? timeout = null)
         {
             var processId = owner.Properties.ProcessId.Value;
 
-            return For(owner, () => FindModalWindow(owner, titleStart, processId),
-                "a dialog titled '" + titleStart + "…'",
+            return For(owner, () => FindWindow(owner, processId, titleStarts),
+                "a window titled '" + string.Join("…' or '", titleStarts) + "…'",
                 timeout);
         }
 
@@ -60,11 +63,11 @@ namespace KeePassAutomation.Framework.Core
             }
         }
 
-        private static Window FindModalWindow(Window owner, string titleStart, int processId)
+        private static Window FindWindow(Window owner, int processId, string[] titleStarts)
         {
             foreach (var modal in owner.ModalWindows)
             {
-                if (HasTitleStarting(modal, titleStart))
+                if (HasTitleStarting(modal, titleStarts))
                 {
                     return modal;
                 }
@@ -75,7 +78,17 @@ namespace KeePassAutomation.Framework.Core
 
             foreach (var window in onDesktop)
             {
-                if (!window.Equals(owner) && HasTitleStarting(window, titleStart))
+                if (!window.Equals(owner) && HasTitleStarting(window, titleStarts))
+                {
+                    return window.AsWindow();
+                }
+            }
+
+            var nested = owner.FindAllDescendants(cf => cf.ByControlType(ControlType.Window));
+
+            foreach (var window in nested)
+            {
+                if (HasTitleStarting(window, titleStarts))
                 {
                     return window.AsWindow();
                 }
@@ -86,7 +99,7 @@ namespace KeePassAutomation.Framework.Core
 
         // A window that is still being created is already on the desktop but has no name yet, and
         // reading it throws. Read without throwing and skip it, so the poll simply tries again.
-        private static bool HasTitleStarting(AutomationElement window, string titleStart)
+        private static bool HasTitleStarting(AutomationElement window, string[] titleStarts)
         {
             var name = window.Properties.Name.ValueOrDefault;
 
@@ -95,7 +108,15 @@ namespace KeePassAutomation.Framework.Core
                 return false;
             }
 
-            return name.StartsWith(titleStart, StringComparison.Ordinal);
+            foreach (var titleStart in titleStarts)
+            {
+                if (name.StartsWith(titleStart, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static TimeSpan Limit(TimeSpan? timeout)

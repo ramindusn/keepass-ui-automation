@@ -1,4 +1,5 @@
 using FlaUI.Core.AutomationElements;
+using KeePassAutomation.Framework.AppUnderTest;
 using KeePassAutomation.Framework.Core;
 
 namespace KeePassAutomation.Screens.Dialogs
@@ -8,14 +9,30 @@ namespace KeePassAutomation.Screens.Dialogs
     {
         public const string Title = "Find";
 
-        public FindDialog(Window window) : base(window)
+        private readonly AppSession _session;
+        private readonly Element _searchText;
+        private readonly Element _ok;
+
+        public FindDialog(AppSession session)
         {
+            _session = session;
+            _searchText = ById("m_tbSearch");
+            _ok = ById("m_btnOK");
         }
 
-        public void SearchFor(string text)
+        public void SetSearchText(string text)
         {
-            Find("m_tbSearch").AsTextBox().Text = text;
-            Find("m_btnOK").Click();
+            _searchText.SetText(text);
+        }
+
+        public void ClickOk()
+        {
+            _ok.Click();
+        }
+
+        protected override AutomationElement Locate()
+        {
+            return _session.WaitForWindow(Title);
         }
     }
 }
