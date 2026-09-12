@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- Plain net8.0: generating the matrix needs nothing from Windows. -->
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+
+</Project>

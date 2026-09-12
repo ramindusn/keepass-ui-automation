@@ -1,5 +1,6 @@
 using KeePassAutomation.Framework.Diagnostics;
 using KeePassAutomation.Tests.Setup;
+using KeePassAutomation.Tests.Traceability;
 using NUnit.Framework;
 
 namespace KeePassAutomation.Tests.Scenarios
@@ -8,6 +9,7 @@ namespace KeePassAutomation.Tests.Scenarios
     {
         [Test]
         [Category("Smoke")]
+        [Requirement("REQ-001", "The application starts and presents its main window")]
         public void ShowsTheMainWindowOnLaunch()
         {
             Assert.That(MainWindow.Title, Does.Contain("KeePass"));
