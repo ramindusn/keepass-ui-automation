@@ -65,6 +65,12 @@ namespace KeePassAutomation.Screens
             Waits.Until(tree, () => group.IsSelected, "group '" + groupName + "' to be selected");
         }
 
+        // On failure the error lists what the entry list actually holds.
+        public void WaitForEntryRow(string title)
+        {
+            FindByName(Find(EntryList), ControlType.ListItem, title);
+        }
+
         // The toolbar, not the Entry menu: KeePass rebuilds that menu as it opens, and its items keep
         // reporting the names they had before, so "Add Entry..." is not findable by name.
         public EntryDialog AddEntry()
@@ -81,6 +87,12 @@ namespace KeePassAutomation.Screens
             Keyboard.Type(VirtualKeyShort.RETURN);
 
             return new EntryDialog(Waits.ForModalWindow(Window, EntryDialog.EditTitle));
+        }
+
+        public FindDialog OpenFind()
+        {
+            ClickMenuItem("Find", "Find...");
+            return new FindDialog(Waits.ForModalWindow(Window, FindDialog.Title));
         }
 
         // KeePass creates the database in memory only; call SaveDatabase to write it to disk.
