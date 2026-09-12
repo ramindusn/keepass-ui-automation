@@ -1,0 +1,24 @@
+name: commit-lint
+
+on:
+  pull_request:
+    branches: [ main ]
+    # "edited" re-runs the check when only the PR title changes.
+    types: [ opened, edited, synchronize, reopened ]
+
+jobs:
+  commit-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # Passed via env, not interpolated, so a crafted PR title can't run commands on the runner.
+      - name: Check PR title and commit messages
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: bash .github/scripts/check-commit-messages.sh
