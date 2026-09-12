@@ -1,18 +1,29 @@
 using KeePassAutomation.Screens;
 using KeePassAutomation.Tests.Setup;
+using KeePassAutomation.Tests.TestData;
 using KeePassAutomation.Tests.Traceability;
 using NUnit.Framework;
 
 namespace KeePassAutomation.Tests.Scenarios
 {
-    public class EntryListTests : DatabaseTestBase
+    public class EntryListTests : BaseTest
     {
         private MainWindow _mainWindow;
+        private DatabaseTestData _database;
 
         [SetUp]
         public void BeforeEach()
         {
             _mainWindow = new MainWindow(Session);
+
+            _database = new DatabaseTestData(Session);
+            _database.CreateSavedDatabase();
+        }
+
+        [TearDown]
+        public void AfterEach()
+        {
+            _database.Delete();
         }
 
         [Test]
@@ -20,12 +31,10 @@ namespace KeePassAutomation.Tests.Scenarios
         public void SelectingAGroupListsItsEntries()
         {
             // A new database has two sample entries in its top group and six empty groups under it.
-            CreateSavedDatabase();
-
             _mainWindow.SelectGroup("General");
             var inGeneral = _mainWindow.EntryTitles;
 
-            _mainWindow.SelectGroup(TopGroupName);
+            _mainWindow.SelectGroup(_database.TopGroupName);
             var inTopGroup = _mainWindow.EntryTitles;
 
             using (Assert.EnterMultipleScope())
