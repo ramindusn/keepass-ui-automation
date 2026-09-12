@@ -10,15 +10,17 @@ namespace KeePassAutomation.Screens.Dialogs
         public const string Title = "Configure New Database";
 
         private readonly AppSession _session;
+        private readonly Element _ok;
 
         public DatabaseSettingsDialog(AppSession session)
         {
             _session = session;
+            _ok = ById("m_btnOK");
         }
 
         public void ClickOk()
         {
-            Find("m_btnOK").Click();
+            _ok.Click();
         }
 
         protected override AutomationElement Locate()

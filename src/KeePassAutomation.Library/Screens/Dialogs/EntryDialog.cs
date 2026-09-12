@@ -11,24 +11,35 @@ namespace KeePassAutomation.Screens.Dialogs
         // The history list opens with fixed "Dialog (unsaved)" and "Current" rows; versions follow, newest first.
         public const int NewestEarlierVersionRow = 2;
 
+        private const string Tabs = "m_tabMain";
+        private const string HistoryList = "m_lvHistory";
+
         private static readonly string[] Titles = { "Add Entry", "Edit Entry" };
 
         private readonly AppSession _session;
+        private readonly Element _title;
+        private readonly Element _viewHistory;
+        private readonly Element _ok;
+        private readonly Element _cancel;
 
         public EntryDialog(AppSession session)
         {
             _session = session;
+            _title = ById("m_tbTitle");
+            _viewHistory = ById("m_btnHistoryView");
+            _ok = ById("m_btnOK");
+            _cancel = ById("m_btnCancel");
         }
 
         public void SetTitle(string title)
         {
-            Find("m_tbTitle").AsTextBox().Text = title;
+            _title.SetText(title);
         }
 
         // Tabs are named by their caption, not by the name of the page behind them.
         public void SelectTab(string caption)
         {
-            FindByName(Find("m_tabMain"), ControlType.TabItem, caption).AsTabItem().Select();
+            ByName(Tabs, ControlType.TabItem, caption).Select();
         }
 
         public void SelectHistoryRow(int index)
@@ -39,17 +50,17 @@ namespace KeePassAutomation.Screens.Dialogs
         // Opens the selected history row read-only, in the EntryViewer.
         public void ClickView()
         {
-            Find("m_btnHistoryView").Click();
+            _viewHistory.Click();
         }
 
         public void ClickOk()
         {
-            Find("m_btnOK").Click();
+            _ok.Click();
         }
 
         public void ClickCancel()
         {
-            Find("m_btnCancel").Click();
+            _cancel.Click();
         }
 
         protected override AutomationElement Locate()
@@ -59,7 +70,7 @@ namespace KeePassAutomation.Screens.Dialogs
 
         private AutomationElement HistoryRowOrNull(int index)
         {
-            var rows = FindRows("m_lvHistory");
+            var rows = FindRows(HistoryList);
 
             if (index >= rows.Length)
             {

@@ -10,20 +10,24 @@ namespace KeePassAutomation.Screens.Dialogs
         public const string Title = "View Entry (Read-Only)";
 
         private readonly AppSession _session;
+        private readonly Element _entryTitle;
+        private readonly Element _cancel;
 
         public EntryViewer(AppSession session)
         {
             _session = session;
+            _entryTitle = ById("m_tbTitle");
+            _cancel = ById("m_btnCancel");
         }
 
         public string EntryTitle
         {
-            get { return Find("m_tbTitle").AsTextBox().Text; }
+            get { return _entryTitle.Text; }
         }
 
         public void ClickCancel()
         {
-            Find("m_btnCancel").Click();
+            _cancel.Click();
         }
 
         protected override AutomationElement Locate()

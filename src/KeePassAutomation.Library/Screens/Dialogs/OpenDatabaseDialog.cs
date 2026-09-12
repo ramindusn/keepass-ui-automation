@@ -10,20 +10,24 @@ namespace KeePassAutomation.Screens.Dialogs
         public const string Title = "Open Database";
 
         private readonly AppSession _session;
+        private readonly Element _password;
+        private readonly Element _ok;
 
         public OpenDatabaseDialog(AppSession session)
         {
             _session = session;
+            _password = ById("m_tbPassword");
+            _ok = ById("m_btnOK");
         }
 
         public void TypePassword(string masterPassword)
         {
-            TypeInto("m_tbPassword", masterPassword);
+            _password.Type(masterPassword);
         }
 
         public void ClickOk()
         {
-            Find("m_btnOK").Click();
+            _ok.Click();
         }
 
         protected override AutomationElement Locate()

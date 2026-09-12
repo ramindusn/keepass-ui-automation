@@ -14,21 +14,17 @@ namespace KeePassAutomation.Screens.Dialogs
         private static readonly string[] Titles = { "Create New Database", "Open Database File" };
 
         private readonly AppSession _session;
+        private readonly Element _fileName;
 
         public FileDialog(AppSession session)
         {
             _session = session;
+            _fileName = new Element(FindFileNameBox);
         }
 
         public void TypeFileName(string path)
         {
-            var fileName = Waits.For(Root,
-                () => Root.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)
-                    .And(cf.ByAutomationId("1001").Or(cf.ByAutomationId("1148")))),
-                "the file name box");
-
-            fileName.Focus();
-            fileName.AsTextBox().Enter(path);
+            _fileName.Enter(path);
         }
 
         public void PressEnter()
@@ -39,6 +35,14 @@ namespace KeePassAutomation.Screens.Dialogs
         protected override AutomationElement Locate()
         {
             return _session.WaitForWindow(Titles);
+        }
+
+        private AutomationElement FindFileNameBox()
+        {
+            return Waits.For(Root,
+                () => Root.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)
+                    .And(cf.ByAutomationId("1001").Or(cf.ByAutomationId("1148")))),
+                "the file name box");
         }
     }
 }

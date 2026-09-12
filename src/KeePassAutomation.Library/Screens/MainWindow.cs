@@ -60,7 +60,7 @@ namespace KeePassAutomation.Screens
         // Clicked, not invoked: invoking something that opens a modal dialog can block until it closes.
         public void ClickToolbarButton(string name)
         {
-            FindByName(Find(Toolbar), ControlType.Button, name).Click();
+            ByName(Toolbar, ControlType.Button, name).Click();
         }
 
         public void ClickMenuItem(string menu, string item)
@@ -85,7 +85,7 @@ namespace KeePassAutomation.Screens
 
         public void SelectEntry(string title)
         {
-            FindByName(Find(EntryList), ControlType.ListItem, title).Click();
+            ByName(EntryList, ControlType.ListItem, title).Click();
         }
 
         public void PressEnter()

@@ -10,25 +10,31 @@ namespace KeePassAutomation.Screens.Dialogs
         public const string Title = "Create Master Key";
 
         private readonly AppSession _session;
+        private readonly Element _password;
+        private readonly Element _repeatPassword;
+        private readonly Element _ok;
 
         public CreateMasterKeyDialog(AppSession session)
         {
             _session = session;
+            _password = ById("m_tbPassword");
+            _repeatPassword = ById("m_tbRepeatPassword");
+            _ok = ById("m_btnOK");
         }
 
         public void TypePassword(string password)
         {
-            TypeInto("m_tbPassword", password);
+            _password.Type(password);
         }
 
         public void TypeRepeatPassword(string password)
         {
-            TypeInto("m_tbRepeatPassword", password);
+            _repeatPassword.Type(password);
         }
 
         public void ClickOk()
         {
-            Find("m_btnOK").Click();
+            _ok.Click();
         }
 
         protected override AutomationElement Locate()

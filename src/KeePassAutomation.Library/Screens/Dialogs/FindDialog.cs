@@ -10,20 +10,24 @@ namespace KeePassAutomation.Screens.Dialogs
         public const string Title = "Find";
 
         private readonly AppSession _session;
+        private readonly Element _searchText;
+        private readonly Element _ok;
 
         public FindDialog(AppSession session)
         {
             _session = session;
+            _searchText = ById("m_tbSearch");
+            _ok = ById("m_btnOK");
         }
 
         public void SetSearchText(string text)
         {
-            Find("m_tbSearch").AsTextBox().Text = text;
+            _searchText.SetText(text);
         }
 
         public void ClickOk()
         {
-            Find("m_btnOK").Click();
+            _ok.Click();
         }
 
         protected override AutomationElement Locate()
