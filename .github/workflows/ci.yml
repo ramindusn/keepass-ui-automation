@@ -53,6 +53,15 @@ jobs:
       - name: Fetch KeePass
         run: pwsh tools/Get-KeePass.ps1
 
+      - name: Cache FFmpeg
+        uses: actions/cache@v6
+        with:
+          path: .ffmpeg
+          key: ffmpeg-${{ hashFiles('tools/Get-FFmpeg.ps1') }}
+
+      - name: Fetch FFmpeg
+        run: pwsh tools/Get-FFmpeg.ps1
+
       - name: Build
         run: dotnet build KeePassAutomation.sln --configuration Release
 
@@ -66,7 +75,7 @@ jobs:
           --blame-hang-timeout 5m
           --blame-hang-dump-type none
 
-      # Whatever the tests wrote to artifacts/, plus the results file.
+      # Videos of every test, plus screenshots and UIA trees of failures.
       - name: Upload test evidence
         if: always()
         uses: actions/upload-artifact@v7
