@@ -12,6 +12,8 @@
     <!-- The style in .editorconfig is checked by the compiler, and a warning of any kind fails the build. -->
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Allure's step weaver ships an Intel-only build for macOS, and nothing here uses Allure steps. -->
+    <AspectInjector_Enabled Condition="$([MSBuild]::IsOSPlatform('OSX'))">false</AspectInjector_Enabled>
   </PropertyGroup>
 
 </Project>

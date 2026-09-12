@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using Allure.Net.Commons;
+using Allure.NUnit;
 using KeePassAutomation.Framework.AppUnderTest;
 using KeePassAutomation.Framework.Diagnostics;
 using KeePassAutomation.Screens;
@@ -9,6 +11,8 @@ using NUnit.Framework.Interfaces;
 namespace KeePassAutomation.Tests.Setup
 {
     // Launch, video recording and teardown, written once. A failed test also leaves a screenshot and UIA tree.
+    // Every test reports to Allure, which is where the evidence ends up.
+    [AllureNUnit]
     public abstract class KeePassTestBase
     {
         private static readonly TimeSpan VideoFinishTimeout = TimeSpan.FromSeconds(15);
@@ -151,12 +155,30 @@ namespace KeePassAutomation.Tests.Setup
         {
             try
             {
-                TestContext.AddTestAttachment(capture(), description);
+                var path = capture();
+                AllureApi.AddAttachment(description, MediaTypeOf(path), path);
             }
             catch (Exception ex)
             {
                 TestContext.WriteLine("Could not capture " + description + ": " + ex.Message);
             }
+        }
+
+        private static string MediaTypeOf(string path)
+        {
+            var extension = Path.GetExtension(path);
+
+            if (extension == ".png")
+            {
+                return "image/png";
+            }
+
+            if (extension == ".mp4")
+            {
+                return "video/mp4";
+            }
+
+            return "text/plain";
         }
     }
 }

@@ -1,28 +1,15 @@
 using System;
-using NUnit.Framework;
-using NUnit.Framework.Interfaces;
-using NUnit.Framework.Internal;
+using Allure.NUnit.Attributes;
 
 namespace KeePassAutomation.Tests.Traceability
 {
-    // NUnit writes the requirement into the result XML, which the traceability matrix is generated from.
+    // Names the requirement a test verifies. Allure groups tests by feature, so the report's
+    // Behaviors view lists every requirement with the tests that cover it and their results.
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    public class RequirementAttribute : NUnitAttribute, IApplyToTest
+    public class RequirementAttribute : AllureFeatureAttribute
     {
-        public RequirementAttribute(string id, string description)
+        public RequirementAttribute(string id, string description) : base(id + " " + description)
         {
-            Id = id;
-            Description = description;
-        }
-
-        public string Id { get; }
-
-        public string Description { get; }
-
-        public void ApplyToTest(Test test)
-        {
-            test.Properties.Add("Requirement", Id);
-            test.Properties.Add("RequirementDescription", Description);
         }
     }
 }
