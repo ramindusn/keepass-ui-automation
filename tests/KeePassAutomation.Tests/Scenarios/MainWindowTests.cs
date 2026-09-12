@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace KeePassAutomation.Tests.Scenarios
 {
-    public class SmokeTests : BaseTest
+    public class MainWindowTests : BaseTest
     {
         private MainWindow _mainWindow;
 

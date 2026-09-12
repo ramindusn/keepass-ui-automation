@@ -32,6 +32,7 @@ namespace KeePassAutomation.Tests.Scenarios
         }
 
         [Test]
+        [Category("Smoke")]
         [Requirement("REQ-002", "A database opens only with the correct master key")]
         public void OpensWithTheCorrectMasterKey()
         {
