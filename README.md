@@ -56,8 +56,6 @@ dotnet test --filter Category=Smoke                   # the quick subset
 dotnet test --filter FullyQualifiedName~EntryTests    # one window
 ```
 
-Set `KEEPASS_EXE` to the path of an installed `KeePass.exe` to test that copy instead.
-
 All settings are in `tests/KeePassAutomation.Tests/Setup/TestConfig.cs`: output folder, timeouts, video, what to capture on failure.
 
 ## A test
