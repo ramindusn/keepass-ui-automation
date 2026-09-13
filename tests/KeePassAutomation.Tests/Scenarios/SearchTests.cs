@@ -34,10 +34,12 @@ namespace KeePassAutomation.Tests.Scenarios
         [Requirement("REQ-005", "Searching by title finds the matching entry")]
         public void SearchFindsTheMatchingEntry()
         {
-            // A new database holds "Sample Entry" and "Sample Entry #2"; "#2" appears only in the second title.
+            // Search for "#2", which appears only in the title of "Sample Entry #2".
             _mainWindow.ClickMenuItem("Find", "Find...");
             _findDialog.SetSearchText("#2");
             _findDialog.ClickOk();
+
+            // Wait for the results to replace the entry list.
             _mainWindow.WaitForEntryRow("Sample Entry #2");
 
             Assert.That(_mainWindow.EntryTitles, Is.EquivalentTo(new[] { "Sample Entry #2" }));

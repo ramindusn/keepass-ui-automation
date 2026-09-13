@@ -30,10 +30,11 @@ namespace KeePassAutomation.Tests.Scenarios
         [Requirement("REQ-003", "Selecting a group lists the entries it contains")]
         public void SelectingAGroupListsItsEntries()
         {
-            // A new database has two sample entries in its top group and six empty groups under it.
+            // General is one of the new database's six empty groups.
             _mainWindow.SelectGroup("General");
             var inGeneral = _mainWindow.EntryTitles;
 
+            // The top group holds the database's two sample entries.
             _mainWindow.SelectGroup(_database.TopGroupName);
             var inTopGroup = _mainWindow.EntryTitles;
 

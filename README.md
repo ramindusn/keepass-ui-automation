@@ -112,8 +112,7 @@ there and nothing else needs to change.
 **1. Find or add the screen.** If the window already has a class in `Screens/`, add the action you
 need as one method. If not, add a class deriving from `ScreenObject` that passes its window title to
 the base, declares its controls with `ById(...)`, and has one method per action. Automation ids
-come from the `DumpUiaTree` diagnostic (`dotnet test --filter Name=DumpUiaTree`) or from
-Accessibility Insights.
+come from Accessibility Insights, or from the UI tree printed in a failure message.
 
 **2. Write the test.** Derive from `BaseTest`, create the screens in `BeforeEach`, and write the
 steps. If the test needs a database, create `DatabaseTestData` in `BeforeEach` and delete it in

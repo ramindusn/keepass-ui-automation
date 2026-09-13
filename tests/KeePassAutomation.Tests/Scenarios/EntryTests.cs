@@ -36,25 +36,25 @@ namespace KeePassAutomation.Tests.Scenarios
         [Requirement("REQ-004", "Changes to an entry are kept in its history")]
         public void EditedEntryKeepsItsPreviousVersion()
         {
-            // The toolbar, not the Entry menu: KeePass rebuilds that menu as it opens, and its items keep
-            // reporting the names they had before, so "Add Entry..." is not findable by name.
+            // Add an entry called "Before".
             _mainWindow.ClickToolbarButton("Add Entry");
             _entryDialog.SetTitle("Before");
             _entryDialog.ClickOk();
 
-            // Selected and opened with Enter: a double-click lands mid-row, where the column under the
-            // pointer decides what happens.
+            // Rename the entry to "After".
             _mainWindow.SelectEntry("Before");
             _mainWindow.PressEnter();
             _entryDialog.SetTitle("After");
             _entryDialog.ClickOk();
 
+            // Open it again and view the newest earlier version from its history.
             _mainWindow.SelectEntry("After");
             _mainWindow.PressEnter();
             _entryDialog.SelectTab("History");
             _entryDialog.SelectHistoryRow(EntryDialog.NewestEarlierVersionRow);
             _entryDialog.ClickView();
 
+            // Read that version's title, then close both dialogs.
             var previousTitle = _entryViewer.EntryTitle;
             _entryViewer.ClickCancel();
             _entryDialog.ClickCancel();
