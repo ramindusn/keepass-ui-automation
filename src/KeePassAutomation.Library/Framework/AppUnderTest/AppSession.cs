@@ -28,10 +28,69 @@ namespace KeePassAutomation.Framework.AppUnderTest
 
         public Window MainWindow { get; }
 
-        // Waits for a window of this app by the start of its title; any of the given titles matches.
+        // Waits for a window of this app by the start of its title; a form that opens under several
+        // titles ("Add Entry", "Edit Entry") matches any of them.
         public Window WaitForWindow(params string[] titleStarts)
         {
-            return Waits.ForWindow(MainWindow, titleStarts);
+            return Waits.For(MainWindow,
+                () => FindWindow(titleStarts),
+                "a window titled '" + string.Join("…' or '", titleStarts) + "…'");
+        }
+
+        // An owned dialog can sit under the main window in the UIA tree, on the desktop, or under
+        // another dialog, so all three places are searched.
+        private Window FindWindow(string[] titleStarts)
+        {
+            foreach (var modal in MainWindow.ModalWindows)
+            {
+                if (HasTitleStarting(modal, titleStarts))
+                {
+                    return modal;
+                }
+            }
+
+            var onDesktop = Automation.GetDesktop()
+                .FindAllChildren(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(Application.ProcessId)));
+
+            foreach (var window in onDesktop)
+            {
+                if (!window.Equals(MainWindow) && HasTitleStarting(window, titleStarts))
+                {
+                    return window.AsWindow();
+                }
+            }
+
+            foreach (var window in MainWindow.FindAllDescendants(cf => cf.ByControlType(ControlType.Window)))
+            {
+                if (HasTitleStarting(window, titleStarts))
+                {
+                    return window.AsWindow();
+                }
+            }
+
+            return null;
+        }
+
+        // A window that is still being created is already on the desktop but has no name yet, and
+        // reading it throws. Read without throwing and skip it, so the poll simply tries again.
+        private static bool HasTitleStarting(AutomationElement window, string[] titleStarts)
+        {
+            var name = window.Properties.Name.ValueOrDefault;
+
+            if (name == null)
+            {
+                return false;
+            }
+
+            foreach (var titleStart in titleStarts)
+            {
+                if (name.StartsWith(titleStart, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         // Launch failures happen in SetUp, before TearDown has a session, so evidence is captured here.
