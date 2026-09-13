@@ -2,24 +2,21 @@
 <#
 .SYNOPSIS
     Downloads the pinned KeePass into .keepass/ (gitignored), verified against the SHA-256
-    published at https://keepass.info/integrity.html.
+    published at https://keepass.info/integrity.html. Delete .keepass/ to download it again.
 #>
-[CmdletBinding()]
-param(
-    [string]$Version = '2.61.1',
-    [string]$Sha256 = '3952354db9b117e906f7cd4f9f5591065b95186472370da47f46f3e246fea864',
-    [switch]$Force
-)
 
 $ErrorActionPreference = 'Stop'
+
+$version = '2.61.1'
+$sha256 = '3952354db9b117e906f7cd4f9f5591065b95186472370da47f46f3e246fea864'
 
 $targetDirectory = Join-Path (Split-Path -Parent $PSScriptRoot) '.keepass'
 $executable = Join-Path $targetDirectory 'KeePass.exe'
 
-if ($Force -or -not (Test-Path $executable)) {
+if (-not (Test-Path $executable)) {
     & (Join-Path $PSScriptRoot 'Install-PinnedZip.ps1') `
-        -Url "https://sourceforge.net/projects/keepass/files/KeePass%202.x/$Version/KeePass-$Version.zip/download" `
-        -Sha256 $Sha256 `
+        -Url "https://sourceforge.net/projects/keepass/files/KeePass%202.x/$version/KeePass-$version.zip/download" `
+        -Sha256 $sha256 `
         -TargetDirectory $targetDirectory
 
     if (-not (Test-Path $executable)) {
@@ -30,4 +27,4 @@ if ($Force -or -not (Test-Path $executable)) {
 # Runs every time, including when CI restores .keepass/ from its cache.
 Copy-Item -Path (Join-Path $PSScriptRoot 'KeePass.config.enforced.xml') -Destination $targetDirectory -Force
 
-Write-Host "KeePass $Version ready at $executable, with the enforced test configuration."
+Write-Host "KeePass $version ready at $executable, with the enforced test configuration."

@@ -23,7 +23,7 @@ if ($LASTEXITCODE -ne 0) {
 $wording = @{}
 
 foreach ($issue in $issues) {
-    $wording[[int]$issue.number] = $issue.title -replace '^REQ-\d+:\s*', ''
+    $wording[[int]$issue.number] = $issue.title
 }
 
 $testCounts = @{}
