@@ -30,6 +30,10 @@ jobs:
   ui-tests:
     needs: lint
     runs-on: windows-latest
+    # Reading the requirement issues needs issues: read, which the default token may not grant.
+    permissions:
+      contents: read
+      issues: read
     # A hang on an unexpected dialog would otherwise hold the runner for 6 hours.
     timeout-minutes: 15
 
@@ -74,14 +78,16 @@ jobs:
           --blame-hang-timeout 5m
           --blame-hang-dump-type none
 
-      # Every test names its requirement, so coverage is read from the results. Runs even if tests
-      # failed, and fails the job if a requirement has no test or there are no results to check.
+      # The open requirement issues are the list of requirements. Runs even if tests failed, fails the
+      # job if a requirement has no test, and adds each requirement's wording to the results.
       - name: Check every requirement has a test
         if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: >
           pwsh tools/Test-RequirementCoverage.ps1
-          requirements.json
-          tests/KeePassAutomation.Tests/bin/Release/net8.0-windows/allure-results
+          -Repository ${{ github.repository }}
+          -ResultsDirectory tests/KeePassAutomation.Tests/bin/Release/net8.0-windows/allure-results
 
       # The Trend widget needs the previous report's history, which the published report has.
       # A first run, or a run on a fork, simply has no history yet.

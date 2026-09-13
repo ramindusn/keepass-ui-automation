@@ -2,7 +2,6 @@ using KeePassAutomation.Screens;
 using KeePassAutomation.Screens.Dialogs;
 using KeePassAutomation.Tests.Setup;
 using KeePassAutomation.Tests.TestData;
-using KeePassAutomation.Tests.Traceability;
 using NUnit.Framework;
 
 namespace KeePassAutomation.Tests.Scenarios
@@ -31,7 +30,7 @@ namespace KeePassAutomation.Tests.Scenarios
         }
 
         [Test]
-        [Requirement("REQ-005", "Searching by title finds the matching entry")]
+        [Requirement("Searching by title finds the matching entry", 20)]
         public void SearchFindsTheMatchingEntry()
         {
             // Search for "#2", which appears only in the title of "Sample Entry #2".

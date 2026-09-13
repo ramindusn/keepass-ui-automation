@@ -2,7 +2,6 @@ using KeePassAutomation.Screens;
 using KeePassAutomation.Screens.Dialogs;
 using KeePassAutomation.Tests.Setup;
 using KeePassAutomation.Tests.TestData;
-using KeePassAutomation.Tests.Traceability;
 using NUnit.Framework;
 
 namespace KeePassAutomation.Tests.Scenarios
@@ -34,7 +33,7 @@ namespace KeePassAutomation.Tests.Scenarios
 
         [Test]
         [Category("Smoke")]
-        [Requirement("REQ-002", "A database opens only with the correct master key")]
+        [Requirement("A database opens only with the correct master key", 17)]
         public void OpensWithTheCorrectMasterKey()
         {
             // Open the database file that setup created and closed.

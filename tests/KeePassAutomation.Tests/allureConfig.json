@@ -1,5 +1,8 @@
 {
   "allure": {
-    "directory": "allure-results"
+    "directory": "allure-results",
+    "links": [
+      "https://github.com/ramindusn/keepass-ui-automation/issues/{tms}"
+    ]
   }
 }

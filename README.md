@@ -52,9 +52,7 @@ tests/KeePassAutomation.Tests/
   Scenarios/        the tests, one class per window
   Setup/            BaseTest, TestConfig, Evidence
   TestData/         DatabaseTestData
-  Traceability/     the Requirement attribute
 tools/              fetch scripts, requirement coverage check
-requirements.json   what the application must do
 ```
 
 </details>
@@ -99,7 +97,8 @@ The report for `main` is published on every run:
 
 Each test names the requirement it verifies, so the report shows it twice: the **Behaviors** view
 groups tests under their requirements, which is the traceability matrix, and a test's own entry
-states the requirement above its evidence. On CI a requirement with no test fails the build.
+states the requirement above its evidence. The requirements are the open issues labelled
+`requirement`: on CI, one with no test fails the build.
 
 ## Settings
 
@@ -142,7 +141,7 @@ public class SearchTests : BaseTest
     }
 
     [Test]
-    [Requirement("REQ-005", "Searching by title finds the matching entry")]
+    [Requirement("Searching by title finds the matching entry", 20)]
     public void SearchFindsTheMatchingEntry()
     {
         _mainWindow.ClickMenuItem("Find", "Find...");
@@ -155,8 +154,10 @@ public class SearchTests : BaseTest
 }
 ```
 
-**3. Name the requirement.** Add it to `requirements.json` and put `[Requirement("REQ-00x", "…")]`
-on the test. Add `[Category("Smoke")]` if it belongs in the quick subset.
+**3. Name the requirement.** Requirements are GitHub issues with the `requirement` label; the issue
+number is the id and the title is the wording. Put `[Requirement("<wording>", <issue number>)]` on the test, which
+also links it to the issue in the report. Add
+`[Category("Smoke")]` if it belongs in the quick subset.
 
 **4. Open a pull request.** Style is enforced by the build, so `dotnet format --verify-no-changes`
 has to pass. Open an issue for the task first: the branch is `kp-<n>-<slug>`, and every commit and
