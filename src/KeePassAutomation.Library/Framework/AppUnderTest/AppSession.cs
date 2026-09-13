@@ -1,32 +1,53 @@
 using System;
-using System.Text;
 using FlaUI.Core;
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using FlaUI.Core.Tools;
 using FlaUI.UIA3;
 using KeePassAutomation.Framework.Core;
-using KeePassAutomation.Framework.Diagnostics;
 
 namespace KeePassAutomation.Framework.AppUnderTest
 {
+    // One running KeePass for the length of a test: started, brought to the front, searched for its
+    // dialogs, and killed at the end.
     public sealed class AppSession : IDisposable
     {
-        private readonly TimeSpan _shutdownTimeout;
+        private readonly Application _application;
+        private readonly UIA3Automation _automation;
 
-        private AppSession(Application application, UIA3Automation automation, Window mainWindow, TimeSpan shutdownTimeout)
+        private AppSession(Application application, UIA3Automation automation, Window mainWindow)
         {
-            Application = application;
-            Automation = automation;
+            _application = application;
+            _automation = automation;
             MainWindow = mainWindow;
-            _shutdownTimeout = shutdownTimeout;
         }
 
-        public Application Application { get; }
-
-        public UIA3Automation Automation { get; }
-
         public Window MainWindow { get; }
+
+        public static AppSession Launch(TimeSpan launchTimeout, TimeSpan foregroundTimeout)
+        {
+            var application = Application.Launch(KeePassPackage.FindExecutable());
+            var automation = new UIA3Automation();
+
+            // Without a timeout FlaUI waits forever, so one unexpected dialog would hang the run.
+            var mainWindow = application.GetMainWindow(automation, launchTimeout);
+
+            if (mainWindow == null)
+            {
+                automation.Dispose();
+                Kill(application);
+                application.Dispose();
+
+                throw new InvalidOperationException(
+                    "KeePass started but showed no main window within " + launchTimeout.TotalSeconds + "s.");
+            }
+
+            // Clicks are real mouse events and land on whichever window is in front, so KeePass is
+            // brought there, and that is checked rather than assumed.
+            Retry.WhileFalse(() => TryBringToFront(mainWindow, automation, application.ProcessId), foregroundTimeout);
+
+            return new AppSession(application, automation, mainWindow);
+        }
 
         // Waits for a window of this app by the start of its title; a form that opens under several
         // titles ("Add Entry", "Edit Entry") matches any of them.
@@ -35,6 +56,14 @@ namespace KeePassAutomation.Framework.AppUnderTest
             return Waits.For(MainWindow,
                 () => FindWindow(titleStarts),
                 "a window titled '" + string.Join("…' or '", titleStarts) + "…'");
+        }
+
+        // Killed, not closed: every test starts a fresh KeePass, and a close is refused while a dialog is open.
+        public void Dispose()
+        {
+            Kill(_application);
+            _automation.Dispose();
+            _application.Dispose();
         }
 
         // An owned dialog can sit under the main window in the UIA tree, on the desktop, or under
@@ -49,8 +78,8 @@ namespace KeePassAutomation.Framework.AppUnderTest
                 }
             }
 
-            var onDesktop = Automation.GetDesktop()
-                .FindAllChildren(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(Application.ProcessId)));
+            var onDesktop = _automation.GetDesktop()
+                .FindAllChildren(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(_application.ProcessId)));
 
             foreach (var window in onDesktop)
             {
@@ -93,48 +122,8 @@ namespace KeePassAutomation.Framework.AppUnderTest
             return false;
         }
 
-        // Launch failures happen in SetUp, before TearDown has a session, so evidence is captured here.
-        // The timeouts are the caller's policy: how long to wait for the main window, for the app to
-        // come to the front, and for it to close before it is killed.
-        public static AppSession Launch(string evidenceDirectory, TimeSpan launchTimeout, TimeSpan foregroundTimeout, TimeSpan shutdownTimeout)
-        {
-            var application = Application.Launch(KeePassPackage.FindExecutable());
-            var automation = new UIA3Automation();
-
-            // Without a timeout FlaUI waits forever, so one unexpected dialog would hang the run.
-            var mainWindow = application.GetMainWindow(automation, launchTimeout);
-
-            if (mainWindow != null)
-            {
-                BringToFront(mainWindow, automation, application.ProcessId, foregroundTimeout);
-                return new AppSession(application, automation, mainWindow, shutdownTimeout);
-            }
-
-            var failure = DescribeLaunchFailure(application, automation, evidenceDirectory, launchTimeout);
-
-            automation.Dispose();
-            Kill(application);
-            application.Dispose();
-
-            throw new InvalidOperationException(failure);
-        }
-
-        public void Dispose()
-        {
-            ShutDownApplication();
-            Automation.Dispose();
-            Application.Dispose();
-        }
-
-        // Clicks are real mouse events, so they land on whichever window is in front — on CI that was the
-        // runner's console, and the click never reached KeePass.
-        private static void BringToFront(Window mainWindow, UIA3Automation automation, int processId, TimeSpan timeout)
-        {
-            Retry.WhileFalse(() => TryBringToFront(mainWindow, automation, processId), timeout);
-        }
-
         // Windows refuses foreground to a process it did not just activate, and says so only by leaving
-        // the window where it was, so the result is checked rather than assumed.
+        // the window where it was. Restoring a minimised window is an activation Windows does allow.
         private static bool TryBringToFront(Window mainWindow, UIA3Automation automation, int processId)
         {
             try
@@ -146,7 +135,6 @@ namespace KeePassAutomation.Framework.AppUnderTest
                     return true;
                 }
 
-                // Restoring a minimised window is an activation Windows does allow.
                 var window = mainWindow.Patterns.Window.PatternOrDefault;
 
                 if (window != null)
@@ -166,89 +154,6 @@ namespace KeePassAutomation.Framework.AppUnderTest
         private static bool HasForeground(UIA3Automation automation, int processId)
         {
             return automation.FocusedElement().Properties.ProcessId.ValueOrDefault == processId;
-        }
-
-        private static string DescribeLaunchFailure(Application application, UIA3Automation automation, string evidenceDirectory, TimeSpan launchTimeout)
-        {
-            var report = new StringBuilder()
-                .AppendLine("KeePass launched but no main window appeared within "
-                    + launchTimeout.TotalSeconds.ToString("0") + "s.")
-                .AppendLine(ProcessState(application))
-                .AppendLine()
-                .AppendLine("Top-level windows on the desktop (* = belongs to KeePass):");
-
-            try
-            {
-                foreach (var window in automation.GetDesktop().FindAllChildren())
-                {
-                    var ownedByKeePass = window.Properties.ProcessId.ValueOrDefault == application.ProcessId;
-                    var marker = ownedByKeePass ? "*" : " ";
-
-                    report.AppendLine("  " + marker + " '" + window.Name + "' class='" + window.ClassName + "'");
-                }
-            }
-            catch (Exception ex)
-            {
-                report.AppendLine("  <could not list windows: " + ex.GetType().Name + ">");
-            }
-
-            if (evidenceDirectory != null)
-            {
-                report.AppendLine()
-                    .AppendLine(TrySave(() => Screenshots.CaptureScreen(evidenceDirectory, "launch-failure"), "screenshot"))
-                    .AppendLine(TrySave(() => UiaTreeDump.WriteTo(evidenceDirectory, "launch-failure.desktop.txt", automation.GetDesktop(), 3), "desktop tree"));
-            }
-
-            return report.ToString();
-        }
-
-        private static string ProcessState(Application application)
-        {
-            try
-            {
-                if (application.HasExited)
-                {
-                    return "The KeePass process had already exited (exit code " + application.ExitCode + ").";
-                }
-
-                return "The KeePass process was still running.";
-            }
-            catch (Exception ex)
-            {
-                return "Could not read the process state: " + ex.GetType().Name + ".";
-            }
-        }
-
-        private static string TrySave(Func<string> save, string what)
-        {
-            try
-            {
-                return "Saved " + what + ": " + save();
-            }
-            catch (Exception ex)
-            {
-                return "Could not save " + what + ": " + ex.Message;
-            }
-        }
-
-        // Close() is refused while a modal is open, so fall back to Kill() rather than leak a process.
-        private void ShutDownApplication()
-        {
-            try
-            {
-                Application.Close();
-
-                if (Retry.WhileFalse(() => Application.HasExited, _shutdownTimeout).Success)
-                {
-                    return;
-                }
-            }
-            catch (Exception)
-            {
-                // Fall through to Kill.
-            }
-
-            Kill(Application);
         }
 
         private static void Kill(Application application)
