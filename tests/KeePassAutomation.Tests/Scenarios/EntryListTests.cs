@@ -1,7 +1,6 @@
 using KeePassAutomation.Screens;
 using KeePassAutomation.Tests.Setup;
 using KeePassAutomation.Tests.TestData;
-using KeePassAutomation.Tests.Traceability;
 using NUnit.Framework;
 
 namespace KeePassAutomation.Tests.Scenarios
@@ -27,7 +26,7 @@ namespace KeePassAutomation.Tests.Scenarios
         }
 
         [Test]
-        [Requirement("REQ-003", "Selecting a group lists the entries it contains")]
+        [Requirement("Selecting a group lists the entries it contains", 18)]
         public void SelectingAGroupListsItsEntries()
         {
             // General is one of the new database's six empty groups.

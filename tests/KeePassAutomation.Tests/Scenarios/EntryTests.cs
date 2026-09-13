@@ -2,7 +2,6 @@ using KeePassAutomation.Screens;
 using KeePassAutomation.Screens.Dialogs;
 using KeePassAutomation.Tests.Setup;
 using KeePassAutomation.Tests.TestData;
-using KeePassAutomation.Tests.Traceability;
 using NUnit.Framework;
 
 namespace KeePassAutomation.Tests.Scenarios
@@ -33,7 +32,7 @@ namespace KeePassAutomation.Tests.Scenarios
         }
 
         [Test]
-        [Requirement("REQ-004", "Changes to an entry are kept in its history")]
+        [Requirement("Changes to an entry are kept in its history", 19)]
         public void EditedEntryKeepsItsPreviousVersion()
         {
             // Add an entry called "Before".
