@@ -1,164 +1,121 @@
 # KeePass UI automation
 
-Desktop UI tests for [KeePass 2.x](https://keepass.info/), built with FlaUI and NUnit.
+Desktop UI tests for [KeePass 2.x](https://keepass.info/), written in C# with FlaUI and NUnit.
 
 [![ci](https://github.com/ramindusn/keepass-ui-automation/actions/workflows/ci.yml/badge.svg)](https://github.com/ramindusn/keepass-ui-automation/actions/workflows/ci.yml)
 [![report](https://img.shields.io/badge/Allure%20report-live-blue)](https://ramindusn.github.io/keepass-ui-automation/)
 
-The application under test is a means to an end. What this repository is really about is the
-framework: how screens, tests, settings and evidence are arranged so that the suite stays
-readable as it grows, and so that a failure on a machine nobody is watching can still be
-diagnosed.
-
-|  |  |
+| | |
 |---|---|
-| **Application under test** | KeePass 2.61.1, downloaded and checksum-verified by a script, never committed |
-| **Driver** | FlaUI 5 over Windows UI Automation (UIA3) |
-| **Tests** | NUnit 4, five scenarios, a fresh KeePass per test |
-| **Evidence** | A video of every test; a screenshot and the UIA tree of every failure |
-| **Reporting** | Allure, published to GitHub Pages after every run on `main` |
-| **CI** | GitHub Actions: style check on Linux, then the suite on Windows |
+| **Application** | KeePass 2.61.1, downloaded and checksum-verified by a script, never committed |
+| **Driver** | FlaUI 5 over Windows UI Automation |
+| **Tests** | NUnit 4, one class per window, a fresh KeePass for every test |
+| **Evidence** | A video of every test, plus a screenshot and the UI tree of every failure |
+| **Report** | Allure, published to GitHub Pages on every run of `main` |
+| **CI** | GitHub Actions: style check on Linux, tests on Windows |
 
 ## How it fits together
 
-![Architecture: tests reference screens, screens reference the framework, the framework drives FlaUI and KeePass](docs/architecture.png)
-
-- **Tests** read as a sequence of steps. A test creates the screens it needs in `BeforeEach`,
-  then names every click and typed field. Nothing is hidden between a line and the click it makes.
-- **Screens** are one class per window or dialog. A screen finds its own window by title when an
-  action is called, declares its controls once, and offers one method per action. It never drives
-  another screen.
-- **The framework** knows nothing about KeePass. Point it at another Windows application and it
-  still compiles.
-
-Dependencies run one way, and one rule keeps the top layer honest: a test may name visible text,
-such as a button caption or a dialog title, but never an automation id.
-
-```bash
-grep -r "ByAutomationId" tests/     # returns nothing
+```mermaid
+flowchart LR
+    T[Tests<br>steps and asserts] --> S[Screens<br>one class per window] --> F[Framework<br>launch, find, wait, record] --> K[KeePass]
 ```
 
-<details>
-<summary>Project layout</summary>
+- **Tests** are a list of steps. Each step is one call on a screen.
+- **Screens** know the window. Each declares its controls once and offers one method per action.
+- **Framework** knows nothing about KeePass. It launches the app, finds windows and controls, waits, and records evidence.
 
 ```
 src/KeePassAutomation.Library/
   Framework/
-    AppUnderTest/   AppSession: launch, bring to front, close
+    AppUnderTest/   AppSession: launch, bring to front, find windows, kill
     Core/           ScreenObject, Element, Waits, ElementNotFoundException
     Diagnostics/    TestRecording, Screenshots, UiaTreeDump
-  Screens/          MainWindow and Dialogs/, the only place locators live
+  Screens/          MainWindow and Dialogs/
 tests/KeePassAutomation.Tests/
-  Scenarios/        the tests, one class per window
+  Scenarios/        the tests
   Setup/            BaseTest, TestConfig, Evidence
   TestData/         DatabaseTestData
-tools/              fetch scripts, requirement coverage check
+tools/              fetch scripts, requirement check, report preparation
 ```
 
-</details>
+## Run it
 
-## Quick start
+The tests need **Windows**.
 
-> [!NOTE]
-> The tests need **Windows**, because FlaUI drives the Windows UI Automation API. The projects
-> also compile on macOS and Linux, so the build and the style check run anywhere.
-
-You need the .NET SDK pinned in `global.json` and PowerShell 7 (`pwsh`).
+You need the .NET SDK from `global.json` and PowerShell 7.
 
 ```bash
-pwsh tools/Get-KeePass.ps1     # fetch the pinned KeePass into .keepass/
-pwsh tools/Get-FFmpeg.ps1      # fetch ffmpeg, used to record the tests
+pwsh tools/Get-KeePass.ps1     # KeePass into .keepass/
+pwsh tools/Get-FFmpeg.ps1      # ffmpeg, records the videos
 dotnet test                    # the whole suite, about a minute
 ```
 
-Run part of it:
-
 ```bash
-dotnet test --filter Category=Smoke                   # the app starts and its core path works
-dotnet test --filter FullyQualifiedName~EntryTests    # one window's tests
+dotnet test --filter Category=Smoke                   # the quick subset
+dotnet test --filter FullyQualifiedName~EntryTests    # one window
 ```
 
-Point the suite at an installed copy instead of the fetched one by setting `KEEPASS_EXE` to the
-path of any `KeePass.exe`.
+Set `KEEPASS_EXE` to the path of an installed `KeePass.exe` to test that copy instead.
 
-## The report
+All settings are in `tests/KeePassAutomation.Tests/Setup/TestConfig.cs`: output folder, timeouts, video, what to capture on failure.
 
-Every test writes an Allure result and a video. A failed test also attaches a screenshot and the
-UIA tree of the window as it was at the moment of failure, which is usually enough to find the
-cause without reproducing it.
+## A test
+
+```csharp
+[Test]
+[Requirement("Searching by title finds the matching entry", 20)]
+public void SearchFindsTheMatchingEntry()
+{
+    _mainWindow.ClickMenuItem("Find", "Find...");
+    _findDialog.SetSearchText("#2");
+    _findDialog.ClickOk();
+    _mainWindow.WaitForEntryRow("Sample Entry #2");
+
+    Assert.That(_mainWindow.EntryTitles, Is.EquivalentTo(new[] { "Sample Entry #2" }));
+}
+```
+
+`BaseTest` starts KeePass before each test and kills it after. Screens are created in `BeforeEach`.
+
+## Requirements
+
+A requirement is a GitHub issue with the `requirement` label. The issue number is its id and the title is its wording.
+
+```mermaid
+flowchart LR
+    I[Issue #20<br>label: requirement] --- A["[Requirement(wording, 20)]<br>on the test"] --- R[Report<br>test grouped under the requirement,<br>linked to the issue]
+```
+
+On CI, `tools/Test-RequirementCoverage.ps1` fails the build when a requirement has no test, or a test names an issue that is not an open requirement.
+
+## Evidence and report
+
+Every test records a video. A failed test also saves a screenshot and the UI tree of the window at that moment. All of it is attached to the test in the report.
 
 ```bash
 npm install --global allure-commandline
 allure serve tests/KeePassAutomation.Tests/bin/Debug/net8.0-windows/allure-results
 ```
 
-The report for `main` is published on every run:
-**[ramindusn.github.io/keepass-ui-automation](https://ramindusn.github.io/keepass-ui-automation/)**
+The report for `main` is live at **[ramindusn.github.io/keepass-ui-automation](https://ramindusn.github.io/keepass-ui-automation/)**. It shows the trend across runs, links each run to its workflow run, and names the KeePass version and runner it ran on.
 
-Each test names the requirement it verifies, so the report shows it twice: the **Behaviors** view
-groups tests under their requirements, which is the traceability matrix, and a test's own entry
-states the requirement above its evidence. The requirements are the open issues labelled
-`requirement`: on CI, one with no test fails the build.
+## CI
 
-## Settings
+```mermaid
+flowchart LR
+    L[lint<br>Linux: dotnet format] --> U[ui-tests<br>Windows: fetch, build, test,<br>requirement check, report] --> P[publish-report<br>main only: GitHub Pages]
+```
 
-Everything a run can be tuned with is in `tests/KeePassAutomation.Tests/Setup/TestConfig.cs`: the
-output folder, the timeouts, whether to record video, what to capture on failure. Change a value
-there and nothing else needs to change.
+The report and the evidence are produced even when tests fail, which is when they matter.
+
+Rules on `main`:
+
+- Every change goes through a pull request. Squash merge only.
+- `lint`, `ui-tests` and `commit-lint` must pass.
 
 ## Adding a test
 
-**1. Find or add the screen.** If the window already has a class in `Screens/`, add the action you
-need as one method. If not, add a class deriving from `ScreenObject` that passes its window title to
-the base, declares its controls with `ById(...)`, and has one method per action. Automation ids
-come from Accessibility Insights, or from the UI tree printed in a failure message.
-
-**2. Write the test.** Derive from `BaseTest`, create the screens in `BeforeEach`, and write the
-steps. If the test needs a database, create `DatabaseTestData` in `BeforeEach` and delete it in
-`AfterEach`.
-
-```csharp
-public class SearchTests : BaseTest
-{
-    private MainWindow _mainWindow;
-    private FindDialog _findDialog;
-    private DatabaseTestData _database;
-
-    [SetUp]
-    public void BeforeEach()
-    {
-        _mainWindow = new MainWindow(Session);
-        _findDialog = new FindDialog(Session);
-
-        _database = new DatabaseTestData(Session);
-        _database.CreateSavedDatabase();
-    }
-
-    [TearDown]
-    public void AfterEach()
-    {
-        _database.Delete();
-    }
-
-    [Test]
-    [Requirement("Searching by title finds the matching entry", 20)]
-    public void SearchFindsTheMatchingEntry()
-    {
-        _mainWindow.ClickMenuItem("Find", "Find...");
-        _findDialog.SetSearchText("#2");
-        _findDialog.ClickOk();
-        _mainWindow.WaitForEntryRow("Sample Entry #2");
-
-        Assert.That(_mainWindow.EntryTitles, Is.EquivalentTo(new[] { "Sample Entry #2" }));
-    }
-}
-```
-
-**3. Name the requirement.** Requirements are GitHub issues with the `requirement` label; the issue
-number is the id and the title is the wording. Put `[Requirement("<wording>", <issue number>)]` on the test, which
-also links it to the issue in the report. Add
-`[Category("Smoke")]` if it belongs in the quick subset.
-
-**4. Open a pull request.** Style is enforced by the build, so `dotnet format --verify-no-changes`
-has to pass. Open an issue for the task first: the branch is `kp-<n>-<slug>`, and every commit and
-the pull request title read `type(KP-<n>): description`, where `<n>` is the issue number.
+1. **Screen.** Add a method to the window's class in `Screens/`, or a new class deriving from `ScreenObject` that passes its window title and declares its controls with `ById(...)`. Use `ByName(...)` when an id is not unique.
+2. **Test.** Derive from `BaseTest`, create the screens in `BeforeEach`, write the steps.
+3. **Requirement.** Put `[Requirement("<wording>", <issue number>)]` on the test. Add `[Category("Smoke")]` if it belongs in the quick subset.
