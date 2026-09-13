@@ -26,7 +26,7 @@
   <text x="64" y="246" font-size="13" font-weight="700" letter-spacing="1.2" fill="#2563eb">SCREENS</text>
   <text x="836" y="246" font-size="12.5" fill="#60a5fa" text-anchor="end">src/…/Screens · the only place an automation id appears</text>
   <line x1="64" y1="260" x2="836" y2="260" stroke="#bfdbfe"/>
-  <text x="64" y="288" font-size="13.5" fill="#1a202c">MainWindow · FileDialog · CreateMasterKeyDialog · DatabaseSettingsDialog</text>
+  <text x="64" y="288" font-size="13.5" fill="#1a202c">MainWindow · SaveFileDialog · OpenFileDialog · CreateMasterKeyDialog · DatabaseSettingsDialog</text>
   <text x="64" y="312" font-size="13.5" fill="#1a202c">OpenDatabaseDialog · EntryDialog · EntryViewer · FindDialog</text>
   <text x="64" y="338" font-size="12.5" fill="#475569">Each finds its own window by title, declares its controls, and has one method per action.</text>
 

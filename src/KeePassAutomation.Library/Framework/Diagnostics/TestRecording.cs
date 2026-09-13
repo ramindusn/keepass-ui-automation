@@ -9,15 +9,14 @@ namespace KeePassAutomation.Framework.Diagnostics
     public sealed class TestRecording : IDisposable
     {
         private readonly VideoRecorder _recorder;
+        private readonly string _filePath;
         private bool _finished;
 
         private TestRecording(VideoRecorder recorder, string filePath)
         {
             _recorder = recorder;
-            FilePath = filePath;
+            _filePath = filePath;
         }
-
-        public string FilePath { get; }
 
         public static TestRecording Start(string ffmpegPath, string targetPath)
         {
@@ -48,13 +47,13 @@ namespace KeePassAutomation.Framework.Diagnostics
         {
             Dispose();
 
-            if (!Retry.WhileFalse(() => IsReleased(FilePath), timeout).Success)
+            if (!Retry.WhileFalse(() => IsReleased(_filePath), timeout).Success)
             {
-                throw new IOException("The video at " + FilePath + " was not finished within "
+                throw new IOException("The video at " + _filePath + " was not finished within "
                     + timeout.TotalSeconds.ToString("0") + "s.");
             }
 
-            return FilePath;
+            return _filePath;
         }
 
         public void Dispose()

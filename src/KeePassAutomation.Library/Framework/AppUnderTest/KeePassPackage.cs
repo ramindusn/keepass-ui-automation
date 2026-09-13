@@ -7,7 +7,7 @@ namespace KeePassAutomation.Framework.AppUnderTest
     public static class KeePassPackage
     {
         // Points at any KeePass.exe, for running the suite against an installed copy or another build.
-        public const string ExecutableVariable = "KEEPASS_EXE";
+        private const string ExecutableVariable = "KEEPASS_EXE";
 
         // The pinned version and its checksum live in tools/Get-KeePass.ps1, and nowhere else.
         public static string FindExecutable()

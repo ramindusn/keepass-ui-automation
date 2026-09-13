@@ -15,7 +15,7 @@ namespace KeePassAutomation.Framework.Diagnostics
             return builder.ToString();
         }
 
-        public static string WriteTo(string directory, string fileName, AutomationElement root, int maxDepth = 8)
+        public static string WriteTo(string directory, string fileName, AutomationElement root, int maxDepth)
         {
             Directory.CreateDirectory(directory);
             var path = Path.Combine(directory, fileName);
