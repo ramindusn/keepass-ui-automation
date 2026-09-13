@@ -12,7 +12,7 @@ Desktop UI tests for [KeePass 2.x](https://keepass.info/), written in C# with Fl
 | **Tests** | NUnit 4, one class per window, a fresh KeePass for every test |
 | **Evidence** | A video of every test, plus a screenshot and the UI tree of every failure |
 | **Report** | Allure, published to GitHub Pages on every run of `main` |
-| **CI** | GitHub Actions: style check on Linux, tests on Windows |
+| **CI** | GitHub Actions: style check on Linux, then smoke tests on pull requests and all tests on `main`, on Windows |
 
 ## How it fits together
 
@@ -85,7 +85,7 @@ flowchart LR
     I[Issue #20<br>label: requirement] --- A["[Requirement(wording, 20)]<br>on the test"] --- R[Report<br>test grouped under the requirement,<br>linked to the issue]
 ```
 
-On CI, `tools/Test-RequirementCoverage.ps1` fails the build when a requirement has no test, or a test names an issue that is not an open requirement.
+On the full run on `main`, `tools/Test-RequirementCoverage.ps1` fails the build when a requirement has no test, or a test names an issue that is not an open requirement.
 
 ## Evidence and report
 
@@ -104,6 +104,8 @@ The report for `main` is live at **[ramindusn.github.io/keepass-ui-automation](h
 flowchart LR
     L[lint<br>Linux: dotnet format] --> U[ui-tests<br>Windows: fetch, build, test,<br>requirement check, report] --> P[publish-report<br>main only: GitHub Pages]
 ```
+
+Pull requests run the smoke tests. `main` runs every test, including `FailsOnPurpose`, which fails deliberately so the published report always shows a failure with its evidence.
 
 The report and the evidence are produced even when tests fail, which is when they matter.
 

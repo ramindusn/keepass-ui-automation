@@ -67,8 +67,20 @@ jobs:
       - name: Build
         run: dotnet build KeePassAutomation.sln --configuration Release
 
-      # Stops a stuck test and names it.
-      - name: Run UI tests
+      # Pull requests run the smoke tests. The hang timeout stops a stuck test and names it.
+      - name: Run the smoke tests
+        if: github.event_name == 'pull_request'
+        run: >
+          dotnet test KeePassAutomation.sln
+          --configuration Release
+          --no-build
+          --filter Category=Smoke
+          --blame-hang-timeout 5m
+          --blame-hang-dump-type none
+
+      # Main runs every test.
+      - name: Run all UI tests
+        if: github.event_name == 'push'
         run: >
           dotnet test KeePassAutomation.sln
           --configuration Release
@@ -77,8 +89,9 @@ jobs:
           --blame-hang-dump-type none
 
       # The steps below run even when tests fail, which is when they matter most.
+      # Only a full run has a result for every requirement.
       - name: Check every requirement has a test
-        if: always()
+        if: always() && github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.token }}
         run: pwsh tools/Test-RequirementCoverage.ps1 -Repository ${{ github.repository }} -ResultsDirectory $env:RESULTS
