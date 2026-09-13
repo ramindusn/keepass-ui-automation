@@ -14,17 +14,13 @@ namespace KeePassAutomation.Screens.Dialogs
         private const string Tabs = "m_tabMain";
         private const string HistoryList = "m_lvHistory";
 
-        private static readonly string[] Titles = { "Add Entry", "Edit Entry" };
-
-        private readonly AppSession _session;
         private readonly Element _title;
         private readonly Element _viewHistory;
         private readonly Element _ok;
         private readonly Element _cancel;
 
-        public EntryDialog(AppSession session)
+        public EntryDialog(AppSession session) : base(session, "Add Entry", "Edit Entry")
         {
-            _session = session;
             _title = ById("m_tbTitle");
             _viewHistory = ById("m_btnHistoryView");
             _ok = ById("m_btnOK");
@@ -61,11 +57,6 @@ namespace KeePassAutomation.Screens.Dialogs
         public void ClickCancel()
         {
             _cancel.Click();
-        }
-
-        protected override AutomationElement Locate()
-        {
-            return _session.WaitForWindow(Titles);
         }
 
         private AutomationElement HistoryRowOrNull(int index)

@@ -10,7 +10,7 @@ namespace KeePassAutomation.Tests.Scenarios
     public class DatabaseTests : BaseTest
     {
         private MainWindow _mainWindow;
-        private FileDialog _fileDialog;
+        private OpenFileDialog _openFileDialog;
         private OpenDatabaseDialog _openDatabaseDialog;
         private DatabaseTestData _database;
 
@@ -18,7 +18,7 @@ namespace KeePassAutomation.Tests.Scenarios
         public void BeforeEach()
         {
             _mainWindow = new MainWindow(Session);
-            _fileDialog = new FileDialog(Session);
+            _openFileDialog = new OpenFileDialog(Session);
             _openDatabaseDialog = new OpenDatabaseDialog(Session);
 
             _database = new DatabaseTestData(Session);
@@ -40,8 +40,8 @@ namespace KeePassAutomation.Tests.Scenarios
             _mainWindow.WaitForDatabaseToClose();
 
             _mainWindow.ClickToolbarButton("Open Database");
-            _fileDialog.TypeFileName(_database.Path);
-            _fileDialog.PressEnter();
+            _openFileDialog.TypeFileName(_database.Path);
+            _openFileDialog.PressEnter();
             _openDatabaseDialog.TypePassword(DatabaseTestData.MasterPassword);
             _openDatabaseDialog.ClickOk();
             _mainWindow.WaitForDatabaseToOpen();

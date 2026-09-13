@@ -1,4 +1,3 @@
-using FlaUI.Core.AutomationElements;
 using KeePassAutomation.Framework.AppUnderTest;
 using KeePassAutomation.Framework.Core;
 
@@ -7,15 +6,11 @@ namespace KeePassAutomation.Screens.Dialogs
     // The master key prompt (KeyPromptForm), titled "Open Database - <file name>".
     public sealed class OpenDatabaseDialog : ScreenObject
     {
-        public const string Title = "Open Database";
-
-        private readonly AppSession _session;
         private readonly Element _password;
         private readonly Element _ok;
 
-        public OpenDatabaseDialog(AppSession session)
+        public OpenDatabaseDialog(AppSession session) : base(session, "Open Database")
         {
-            _session = session;
             _password = ById("m_tbPassword");
             _ok = ById("m_btnOK");
         }
@@ -28,11 +23,6 @@ namespace KeePassAutomation.Screens.Dialogs
         public void ClickOk()
         {
             _ok.Click();
-        }
-
-        protected override AutomationElement Locate()
-        {
-            return _session.WaitForWindow(Title);
         }
     }
 }

@@ -2,14 +2,12 @@ using System;
 using System.Collections.Generic;
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
-using FlaUI.Core.Input;
-using FlaUI.Core.WindowsAPI;
 using KeePassAutomation.Framework.AppUnderTest;
 using KeePassAutomation.Framework.Core;
 
 namespace KeePassAutomation.Screens
 {
-    // One action per method. The sequence of actions that makes a scenario is written in the test.
+    // KeePass's main window: one method per action.
     public sealed class MainWindow : ScreenObject
     {
         private const string GroupTree = "m_tvGroups";
@@ -17,30 +15,22 @@ namespace KeePassAutomation.Screens
         private const string MainMenu = "m_menuMain";
         private const string Toolbar = "m_toolMain";
 
-        private readonly AppSession _session;
-
-        public MainWindow(AppSession session)
+        public MainWindow(AppSession session) : base(session)
         {
-            _session = session;
-        }
-
-        public Window Window
-        {
-            get { return _session.MainWindow; }
         }
 
         public string Title
         {
-            get { return Window.Title; }
+            get { return Root.Name; }
         }
 
-        // Judged by the group tree, not the title, which KeePass shortens with "..." when long.
+        // True when the group tree has groups; the title can't be trusted, as KeePass shortens it.
         public bool IsDatabaseOpen
         {
             get { return Find(GroupTree).FindFirstChild(cf => cf.ByControlType(ControlType.TreeItem)) != null; }
         }
 
-        // Each row's name is its Title column.
+        // The titles of the entries in the list.
         public IReadOnlyList<string> EntryTitles
         {
             get
@@ -56,24 +46,20 @@ namespace KeePassAutomation.Screens
             }
         }
 
-        // Menu and toolbar items have no AutomationId, so they're found by name inside their bar.
-        // Clicked, not invoked: invoking something that opens a modal dialog can block until it closes.
+        // Clicks a toolbar button by its name.
         public void ClickToolbarButton(string name)
         {
             ByName(Toolbar, ControlType.Button, name).Click();
         }
 
+        // Opens a menu and clicks one of its items.
         public void ClickMenuItem(string menu, string item)
         {
-            var parent = FindByName(Find(MainMenu), ControlType.MenuItem, menu).AsMenuItem();
-            parent.Expand();
-
-            var opened = Waits.For(Root, () => FindOpenedMenuItem(parent, item), "MenuItem named '" + item + "'");
-
-            opened.Click();
+            FindByName(Find(MainMenu), ControlType.MenuItem, menu).AsMenuItem().Expand();
+            FindByName(Root, ControlType.MenuItem, item).Click();
         }
 
-        // Groups have no AutomationId, so they're found by name inside the tree.
+        // Selects a group in the tree and waits until it is selected.
         public void SelectGroup(string groupName)
         {
             var tree = Find(GroupTree);
@@ -88,12 +74,7 @@ namespace KeePassAutomation.Screens
             ByName(EntryList, ControlType.ListItem, title).Click();
         }
 
-        public void PressEnter()
-        {
-            Keyboard.Type(VirtualKeyShort.RETURN);
-        }
-
-        // On failure the error lists what the entry list actually holds.
+        // Waits until an entry with this title appears in the list.
         public void WaitForEntryRow(string title)
         {
             FindByName(Find(EntryList), ControlType.ListItem, title);
@@ -109,33 +90,10 @@ namespace KeePassAutomation.Screens
             Waits.Until(Root, () => !IsDatabaseOpen, "the database to close");
         }
 
-        // Unsaved changes show as "*" before " - KeePass" in the title.
+        // Waits until the title loses its "*", which marks unsaved changes.
         public void WaitForDatabaseToBeSaved()
         {
             Waits.Until(Root, () => !Title.EndsWith("* - KeePass", StringComparison.Ordinal), "the database to be saved");
-        }
-
-        protected override AutomationElement Locate()
-        {
-            return Window;
-        }
-
-        // An open dropdown is a popup, which WinForms parents under the menu item or under the window.
-        private AutomationElement FindOpenedMenuItem(AutomationElement parent, string item)
-        {
-            var underParent = FindMenuItem(parent, item);
-
-            if (underParent != null)
-            {
-                return underParent;
-            }
-
-            return FindMenuItem(Root, item);
-        }
-
-        private static AutomationElement FindMenuItem(AutomationElement container, string name)
-        {
-            return container.FindFirstDescendant(cf => cf.ByControlType(ControlType.MenuItem).And(cf.ByName(name)));
         }
     }
 }

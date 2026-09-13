@@ -33,18 +33,17 @@ namespace KeePassAutomation.Tests.TestData
             get { return System.IO.Path.GetFileNameWithoutExtension(Path); }
         }
 
-        // Every step is written out: toolbar, Windows save dialog, master key, settings, then save.
-        // Saved, so closing KeePass afterwards doesn't stop at a "save changes?" prompt.
+        // Saved, so a later close or open doesn't stop at a "save changes?" prompt.
         public void CreateSavedDatabase()
         {
             var mainWindow = new MainWindow(_session);
-            var fileDialog = new FileDialog(_session);
+            var saveFileDialog = new SaveFileDialog(_session);
             var masterKeyDialog = new CreateMasterKeyDialog(_session);
             var settingsDialog = new DatabaseSettingsDialog(_session);
 
             mainWindow.ClickToolbarButton("New Database");
-            fileDialog.TypeFileName(Path);
-            fileDialog.PressEnter();
+            saveFileDialog.TypeFileName(Path);
+            saveFileDialog.PressEnter();
             masterKeyDialog.TypePassword(MasterPassword);
             masterKeyDialog.TypeRepeatPassword(MasterPassword);
             masterKeyDialog.ClickOk();
@@ -55,7 +54,8 @@ namespace KeePassAutomation.Tests.TestData
             mainWindow.WaitForDatabaseToBeSaved();
         }
 
-        // Best effort: a leftover temporary folder must not fail the test.
+        // Best effort: KeePass is still running when this runs and may hold the file, and a leftover
+        // temporary folder must not fail the test.
         public void Delete()
         {
             try
@@ -64,11 +64,9 @@ namespace KeePassAutomation.Tests.TestData
             }
             catch (IOException)
             {
-                // Left behind; the operating system cleans its temp folder.
             }
             catch (UnauthorizedAccessException)
             {
-                // KeePass may still hold the file for a moment after closing.
             }
         }
     }

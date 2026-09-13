@@ -18,9 +18,6 @@ namespace KeePassAutomation.Tests.Setup
             // The main window appearing after launch.
             public static readonly TimeSpan Launch = TimeSpan.FromSeconds(30);
 
-            // The app coming to the front, so that clicks reach it.
-            public static readonly TimeSpan Foreground = TimeSpan.FromSeconds(10);
-
             // The recorder releasing the video file after the test.
             public static readonly TimeSpan VideoFinish = TimeSpan.FromSeconds(15);
         }

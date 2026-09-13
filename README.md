@@ -110,8 +110,8 @@ there and nothing else needs to change.
 ## Adding a test
 
 **1. Find or add the screen.** If the window already has a class in `Screens/`, add the action you
-need as one method. If not, add a class that takes the session, finds its window by title in
-`Locate()`, declares its controls with `ById(...)`, and has one method per action. Automation ids
+need as one method. If not, add a class deriving from `ScreenObject` that passes its window title to
+the base, declares its controls with `ById(...)`, and has one method per action. Automation ids
 come from the `DumpUiaTree` diagnostic (`dotnet test --filter Name=DumpUiaTree`) or from
 Accessibility Insights.
 

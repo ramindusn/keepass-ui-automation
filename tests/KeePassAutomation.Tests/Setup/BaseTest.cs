@@ -8,8 +8,7 @@ using NUnit.Framework.Interfaces;
 
 namespace KeePassAutomation.Tests.Setup
 {
-    // A fresh KeePass before each test, closed after it, with the settings from TestConfig
-    // and the evidence from Evidence. This class only knows how to start and stop the app.
+    // A fresh KeePass before each test, stopped after it, with the video and failure evidence around it.
     [AllureNUnit]
     public abstract class BaseTest
     {
@@ -41,7 +40,7 @@ namespace KeePassAutomation.Tests.Setup
             // Started before launch, so a failed launch is on the video too.
             _recording = Evidence.StartVideo(TestContext.CurrentContext.Test.Name);
 
-            _session = AppSession.Launch(TestConfig.Timeouts.Launch, TestConfig.Timeouts.Foreground);
+            _session = AppSession.Launch(TestConfig.Timeouts.Launch);
         }
 
         [TearDown]
