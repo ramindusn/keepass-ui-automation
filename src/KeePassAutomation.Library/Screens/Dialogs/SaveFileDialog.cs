@@ -10,7 +10,6 @@ namespace KeePassAutomation.Screens.Dialogs
 
         public SaveFileDialog(AppSession session) : base(session, "Create New Database")
         {
-            // Windows' own id for the file name box in a save dialog.
             _fileName = ById("1001");
         }
 
