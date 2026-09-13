@@ -60,24 +60,6 @@ dotnet test --filter FullyQualifiedName~EntryTests    # one window
 
 All settings are in `tests/KeePassAutomation.Tests/Setup/TestConfig.cs`: output folder, timeouts, video, what to capture on failure.
 
-## A test
-
-```csharp
-[Test]
-[Requirement("Searching by title finds the matching entry", 20)]
-public void SearchFindsTheMatchingEntry()
-{
-    _mainWindow.ClickMenuItem("Find", "Find...");
-    _findDialog.SetSearchText("#2");
-    _findDialog.ClickOk();
-    _mainWindow.WaitForEntryRow("Sample Entry #2");
-
-    Assert.That(_mainWindow.EntryTitles, Is.EquivalentTo(new[] { "Sample Entry #2" }));
-}
-```
-
-`BaseTest` starts KeePass before each test and kills it after. Screens are created in `BeforeEach`.
-
 ## Evidence and report
 
 Every test records a video. A failed test also saves a screenshot and the UI tree of the window at that moment. All of it is attached to the test in the report.
@@ -125,9 +107,3 @@ Rules on `main`:
 
 - Every change goes through a pull request. Squash merge only.
 - `lint`, `ui-tests` and `commit-lint` must pass.
-
-## Adding a test
-
-1. **Screen.** Add a method to the window's class in `Screens/`, or a new class deriving from `ScreenObject` that passes its window title and declares its controls with `ById(...)`. Use `ByName(...)` when an id is not unique.
-2. **Test.** Derive from `BaseTest`, create the screens in `BeforeEach`, write the steps.
-3. **Requirement.** Put `[Requirement("<wording>", <issue number>)]` on the test. Add `[Category("Smoke")]` if it belongs in the quick subset.
