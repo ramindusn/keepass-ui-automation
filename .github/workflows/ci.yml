@@ -95,12 +95,14 @@ jobs:
             catch { Write-Host "No previous $file" }
           }
 
-      # Without this a point on the trend is an unlabelled bar; with it, it says which run it was.
-      - name: Name the run in the report
+      # Without these a point on the trend is an unlabelled bar, and the report does not say what
+      # it ran against.
+      - name: Describe the run in the report
         if: always()
         run: |
           $results = "tests/KeePassAutomation.Tests/bin/Release/net8.0-windows/allure-results"
           New-Item -ItemType Directory -Force $results | Out-Null
+
           @{
             name = "GitHub Actions"
             type = "github"
@@ -108,6 +110,16 @@ jobs:
             buildUrl = "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             reportUrl = "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
           } | ConvertTo-Json | Set-Content "$results/executor.json"
+
+          $exe = ".keepass/KeePass.exe"
+          $keepass = if (Test-Path $exe) { (Get-Item $exe).VersionInfo.ProductVersion } else { "not fetched" }
+
+          @(
+            "Application=KeePass $keepass"
+            "Runner=$env:ImageOS $env:ImageVersion"
+            "Locale=$((Get-Culture).Name)"
+            "Commit=${{ github.sha }}"
+          ) | Set-Content "$results/environment.properties"
 
       # The report holds every test with its requirement, video, and on failure the screenshot
       # and UIA tree. Generated even when tests failed, which is when it is needed.
