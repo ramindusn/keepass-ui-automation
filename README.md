@@ -9,7 +9,7 @@ Desktop UI tests for [KeePass 2.x](https://keepass.info/), written in C# with Fl
 |---|---|---|
 | Application | KeePass 2.61.1 | Downloaded and checksum-verified by a script, never committed |
 | Driver | FlaUI 5 | Windows UI Automation |
-| Tests | NUnit 4 | One class per window, a fresh KeePass for every test |
+| Tests | NUnit 4 | A fresh KeePass for every test |
 | Evidence | FlaUI and ffmpeg | A video of every test, plus a screenshot and the UI tree of every failure |
 | Report | Allure | Published to GitHub Pages on every run of `main` |
 | CI | GitHub Actions | Style check on Linux; smoke tests on pull requests, all tests on `main`, on Windows |
@@ -18,26 +18,28 @@ Desktop UI tests for [KeePass 2.x](https://keepass.info/), written in C# with Fl
 
 ```mermaid
 flowchart LR
-    T[Tests<br>steps and asserts] --> S[Screens<br>one class per window] --> F[Framework<br>launch, find, wait, record] --> K[KeePass]
+    T["<b>Test</b><br/>one scenario, step by step"]
+    S["<b>Screen</b><br/>one class per KeePass window"]
+    F["<b>Framework</b><br/>start, find, wait, record"]
+    K["<b>KeePass</b>"]
+    T --> S --> F --> K
 ```
 
-- **Tests** are a list of steps. Each step is one call on a screen.
-- **Screens** know the window. Each declares its controls once and offers one method per action.
-- **Framework** knows nothing about KeePass. It launches the app, finds windows and controls, waits, and records evidence.
+A **test** is a short list of steps followed by an assert. Every step is one call on a screen, so the test reads like the manual test case it came from.
+
+A **screen** is one class for one KeePass window or dialog. It knows that window's controls and offers one method per action, such as `TypePassword` or `ClickOk`. Automation ids live here and nowhere else.
+
+The **framework** does the work that is the same for every screen: it starts KeePass before a test and stops it after, finds windows and controls, waits for them to appear, and records the video, the screenshot and the UI tree.
+
+One step, top to bottom:
 
 ```
-src/KeePassAutomation.Library/
-  Framework/
-    AppUnderTest/   AppSession: launch, bring to front, find windows, kill
-    Core/           ScreenObject, Element, Waits, ElementNotFoundException
-    Diagnostics/    TestRecording, Screenshots, UiaTreeDump
-  Screens/          MainWindow and Dialogs/
-tests/KeePassAutomation.Tests/
-  Scenarios/        the tests
-  Setup/            BaseTest, TestConfig, Evidence
-  TestData/         DatabaseTestData
-tools/              fetch scripts, requirement check, report preparation
+_openDatabaseDialog.TypePassword(password)     test: one step
+  _password.Type(password)                     screen: the password box on the Open Database dialog
+    Find("m_tbPassword")                       framework: wait for the control, up to 10 s, then type
 ```
+
+Tests are in `tests/KeePassAutomation.Tests/Scenarios`, screens in `src/KeePassAutomation.Library/Screens`, and the framework in `src/KeePassAutomation.Library/Framework`.
 
 ## Run it
 
@@ -75,17 +77,6 @@ public void SearchFindsTheMatchingEntry()
 ```
 
 `BaseTest` starts KeePass before each test and kills it after. Screens are created in `BeforeEach`.
-
-## Requirements
-
-A requirement is a GitHub issue with the `requirement` label. The issue number is its id and the title is its wording.
-
-```mermaid
-flowchart LR
-    I[Issue #20<br>label: requirement] --- A["[Requirement(wording, 20)]<br>on the test"] --- R[Report<br>test grouped under the requirement,<br>linked to the issue]
-```
-
-On the full run on `main`, `tools/Test-RequirementCoverage.ps1` fails the build when a requirement has no test, or a test names an issue that is not an open requirement.
 
 ## Evidence and report
 
