@@ -1,4 +1,3 @@
-using KeePassAutomation.Framework.Diagnostics;
 using KeePassAutomation.Screens;
 using KeePassAutomation.Tests.Setup;
 using KeePassAutomation.Tests.Traceability;
@@ -25,13 +24,10 @@ namespace KeePassAutomation.Tests.Scenarios
         }
 
         [Test]
-        [Explicit("Diagnostic: writes the main window's UIA tree to artifacts/ for finding locators.")]
-        public void DumpUiaTree()
+        [Explicit("An example of an explicit test: it runs only when selected by name.")]
+        public void StartsWithNoDatabaseOpen()
         {
-            var path = UiaTreeDump.WriteTo(TestConfig.ArtifactsDirectory, "main-window.tree.txt", Session.MainWindow, 12);
-
-            TestContext.AddTestAttachment(path, "Full UIA tree");
-            TestContext.WriteLine("UIA tree written to " + path);
+            Assert.That(_mainWindow.IsDatabaseOpen, Is.False);
         }
     }
 }

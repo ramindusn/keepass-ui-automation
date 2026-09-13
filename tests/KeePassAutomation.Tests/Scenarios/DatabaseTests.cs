@@ -23,6 +23,7 @@ namespace KeePassAutomation.Tests.Scenarios
 
             _database = new DatabaseTestData(Session);
             _database.CreateSavedDatabase();
+            _database.CloseDatabase();
         }
 
         [TearDown]
@@ -36,12 +37,12 @@ namespace KeePassAutomation.Tests.Scenarios
         [Requirement("REQ-002", "A database opens only with the correct master key")]
         public void OpensWithTheCorrectMasterKey()
         {
-            _mainWindow.ClickMenuItem("File", "Close");
-            _mainWindow.WaitForDatabaseToClose();
-
+            // Open the database file that setup created and closed.
             _mainWindow.ClickToolbarButton("Open Database");
             _openFileDialog.TypeFileName(_database.Path);
             _openFileDialog.PressEnter();
+
+            // Unlock it with the master password.
             _openDatabaseDialog.TypePassword(DatabaseTestData.MasterPassword);
             _openDatabaseDialog.ClickOk();
             _mainWindow.WaitForDatabaseToOpen();

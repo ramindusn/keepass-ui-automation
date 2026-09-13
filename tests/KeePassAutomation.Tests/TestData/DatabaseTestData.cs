@@ -54,6 +54,15 @@ namespace KeePassAutomation.Tests.TestData
             mainWindow.WaitForDatabaseToBeSaved();
         }
 
+        // Closes the database in KeePass, leaving its file ready to be opened again.
+        public void CloseDatabase()
+        {
+            var mainWindow = new MainWindow(_session);
+
+            mainWindow.ClickMenuItem("File", "Close");
+            mainWindow.WaitForDatabaseToClose();
+        }
+
         // Best effort: KeePass is still running when this runs and may hold the file, and a leftover
         // temporary folder must not fail the test.
         public void Delete()
