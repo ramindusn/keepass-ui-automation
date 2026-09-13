@@ -4,35 +4,36 @@ using FlaUI.Core.Input;
 
 namespace KeePassAutomation.Framework.Core
 {
-    // A control described by how to find it, and found again on every action. Nothing is looked up
-    // when it is declared, so a screen can list its controls before its window exists. Every lookup
-    // waits, so no action needs its own wait.
+    // A button, text box or tab on a screen, which a test can click, type into or read.
     public sealed class Element
     {
         private readonly Func<AutomationElement> _find;
 
+        // Takes how to find the control.
         public Element(Func<AutomationElement> find)
         {
             _find = find;
         }
 
+        // Reads the control's text.
         public string Text
         {
             get { return _find().AsTextBox().Text; }
         }
 
+        // Clicks the control.
         public void Click()
         {
             _find().Click();
         }
 
-        // Set through UI Automation, for ordinary text boxes.
+        // Sets the text directly, for ordinary text boxes.
         public void SetText(string text)
         {
             _find().AsTextBox().Text = text;
         }
 
-        // Typed with the keyboard, for boxes that keep their own buffer and ignore text set via UIA.
+        // Types with the keyboard, for password boxes that ignore text set directly.
         public void Type(string text)
         {
             _find().Focus();
@@ -40,7 +41,7 @@ namespace KeePassAutomation.Framework.Core
             Wait.UntilInputIsProcessed();
         }
 
-        // Typed into a cleared box, for the file name box of Windows' file dialog.
+        // Clears the box and types into it, for the file name box in Windows' file dialogs.
         public void Enter(string text)
         {
             var element = _find();
@@ -49,6 +50,7 @@ namespace KeePassAutomation.Framework.Core
             element.AsTextBox().Enter(text);
         }
 
+        // Selects the control, such as a tab.
         public void Select()
         {
             _find().AsTabItem().Select();
