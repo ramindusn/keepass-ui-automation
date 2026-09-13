@@ -6,13 +6,13 @@ on:
   pull_request:
     branches: [ main ]
 
-# A newer push to the same branch supersedes the run in progress.
+# A new push cancels the run still going on the same branch.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  # Style and build on Linux first: cheap, and the Windows runner is not spent on code that fails here.
+  # Formatting is checked on Linux first, before the slower Windows job starts.
   lint:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -30,46 +30,44 @@ jobs:
   ui-tests:
     needs: lint
     runs-on: windows-latest
-    # Reading the requirement issues needs issues: read, which the default token may not grant.
+    # issues: read lets the coverage check read the requirement issues.
     permissions:
       contents: read
       issues: read
-    # A hang on an unexpected dialog would otherwise hold the runner for 6 hours.
+    # Stops a run stuck on an unexpected dialog.
     timeout-minutes: 15
+    env:
+      RESULTS: tests/KeePassAutomation.Tests/bin/Release/net8.0-windows/allure-results
+      REPORT_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
 
     steps:
       - uses: actions/checkout@v7
 
-      # SDK 10 builds (pinned by global.json); the tests run on .NET 8.
+      # SDK 10 builds; the tests run on .NET 8.
       - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: |
             8.0.x
             10.0.x
 
-      # Keyed on the fetch script, so bumping the version there is the whole change.
-      - name: Cache KeePass
+      # Downloaded again only when a fetch script changes.
+      - name: Cache KeePass and FFmpeg
         uses: actions/cache@v6
         with:
-          path: .keepass
-          key: keepass-${{ hashFiles('tools/Get-KeePass.ps1', 'tools/Install-PinnedZip.ps1') }}
+          path: |
+            .keepass
+            .ffmpeg
+          key: tools-${{ hashFiles('tools/Get-*.ps1', 'tools/Install-PinnedZip.ps1') }}
 
-      - name: Fetch KeePass
-        run: pwsh tools/Get-KeePass.ps1
-
-      - name: Cache FFmpeg
-        uses: actions/cache@v6
-        with:
-          path: .ffmpeg
-          key: ffmpeg-${{ hashFiles('tools/Get-FFmpeg.ps1', 'tools/Install-PinnedZip.ps1') }}
-
-      - name: Fetch FFmpeg
-        run: pwsh tools/Get-FFmpeg.ps1
+      - name: Fetch KeePass and FFmpeg
+        run: |
+          ./tools/Get-KeePass.ps1
+          ./tools/Get-FFmpeg.ps1
 
       - name: Build
         run: dotnet build KeePassAutomation.sln --configuration Release
 
-      # The hang timeout names and stops a stuck test instead of timing out the whole job.
+      # Stops a stuck test and names it.
       - name: Run UI tests
         run: >
           dotnet test KeePassAutomation.sln
@@ -78,62 +76,22 @@ jobs:
           --blame-hang-timeout 5m
           --blame-hang-dump-type none
 
-      # The open requirement issues are the list of requirements. Runs even if tests failed, fails the
-      # job if a requirement has no test, and adds each requirement's wording to the results.
+      # The steps below run even when tests fail, which is when they matter most.
       - name: Check every requirement has a test
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
-        run: >
-          pwsh tools/Test-RequirementCoverage.ps1
-          -Repository ${{ github.repository }}
-          -ResultsDirectory tests/KeePassAutomation.Tests/bin/Release/net8.0-windows/allure-results
+        run: pwsh tools/Test-RequirementCoverage.ps1 -Repository ${{ github.repository }} -ResultsDirectory $env:RESULTS
 
-      # The Trend widget needs the previous report's history, which the published report has.
-      # A first run, or a run on a fork, simply has no history yet.
-      - name: Fetch the previous report's history
+      - name: Prepare the report
         if: always()
-        run: |
-          $history = "tests/KeePassAutomation.Tests/bin/Release/net8.0-windows/allure-results/history"
-          New-Item -ItemType Directory -Force $history | Out-Null
-          foreach ($file in "history.json", "history-trend.json", "duration-trend.json", "categories-trend.json", "retry-trend.json") {
-            try { Invoke-WebRequest "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/history/$file" -OutFile "$history/$file" }
-            catch { Write-Host "No previous $file" }
-          }
+        run: pwsh tools/Prepare-AllureReport.ps1 -ResultsDirectory $env:RESULTS -ReportUrl $env:REPORT_URL
 
-      # Without these a point on the trend is an unlabelled bar, and the report does not say what
-      # it ran against.
-      - name: Describe the run in the report
-        if: always()
-        run: |
-          $results = "tests/KeePassAutomation.Tests/bin/Release/net8.0-windows/allure-results"
-          New-Item -ItemType Directory -Force $results | Out-Null
-
-          @{
-            name = "GitHub Actions"
-            type = "github"
-            buildName = "${{ github.workflow }} #${{ github.run_number }}"
-            buildUrl = "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-            reportUrl = "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
-          } | ConvertTo-Json | Set-Content "$results/executor.json"
-
-          $exe = ".keepass/KeePass.exe"
-          $keepass = if (Test-Path $exe) { (Get-Item $exe).VersionInfo.ProductVersion } else { "not fetched" }
-
-          @(
-            "Application=KeePass $keepass"
-            "Runner=$env:ImageOS $env:ImageVersion"
-            "Locale=$((Get-Culture).Name)"
-            "Commit=${{ github.sha }}"
-          ) | Set-Content "$results/environment.properties"
-
-      # The report holds every test with its requirement, video, and on failure the screenshot
-      # and UIA tree. Generated even when tests failed, which is when it is needed.
       - name: Generate the Allure report
         if: always()
         run: |
           npm install --global allure-commandline@2.43.0
-          allure generate tests/KeePassAutomation.Tests/bin/Release/net8.0-windows/allure-results --clean --output allure-report
+          allure generate $env:RESULTS --clean --output allure-report
 
       - name: Upload Allure report
         if: always()
@@ -142,7 +100,7 @@ jobs:
           name: allure-report
           path: allure-report
 
-      # The raw files behind the report, in case the report itself is what failed.
+      # The raw videos, screenshots and UIA trees, in case the report itself failed.
       - name: Upload test evidence
         if: always()
         uses: actions/upload-artifact@v7
@@ -151,8 +109,7 @@ jobs:
           path: "**/artifacts/**"
           if-no-files-found: ignore
 
-  # The report for main goes to GitHub Pages. The deploy action uploads the files directly, so
-  # publishing makes no commit. It runs even when tests failed: that is when the report matters.
+  # Publishes main's report to GitHub Pages, even when tests failed, without making a commit.
   publish-report:
     needs: ui-tests
     if: always() && github.ref == 'refs/heads/main' && needs.ui-tests.result != 'skipped'
