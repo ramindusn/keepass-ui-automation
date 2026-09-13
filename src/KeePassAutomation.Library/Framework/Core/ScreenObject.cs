@@ -1,4 +1,3 @@
-using System;
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 
@@ -29,17 +28,21 @@ namespace KeePassAutomation.Framework.Core
             return new Element(() => FindByName(Find(containerId), type, name));
         }
 
-        protected AutomationElement Find(string automationId, TimeSpan? timeout = null)
+        // The window is located once, then searched until the control appears.
+        protected AutomationElement Find(string automationId)
         {
-            return Waits.ForDescendant(Root, automationId, timeout);
+            var root = Root;
+
+            return Waits.For(root,
+                () => root.FindFirstDescendant(cf => cf.ByAutomationId(automationId)),
+                "element with AutomationId '" + automationId + "'");
         }
 
-        protected static AutomationElement FindByName(AutomationElement container, ControlType type, string name, TimeSpan? timeout = null)
+        protected static AutomationElement FindByName(AutomationElement container, ControlType type, string name)
         {
             return Waits.For(container,
                 () => container.FindFirstDescendant(cf => cf.ByControlType(type).And(cf.ByName(name))),
-                type + " named '" + name + "'",
-                timeout);
+                type + " named '" + name + "'");
         }
 
         // The rows of a list view, in display order.
