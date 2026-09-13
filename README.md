@@ -98,6 +98,27 @@ allure serve tests/KeePassAutomation.Tests/bin/Debug/net8.0-windows/allure-resul
 
 The report for `main` is live at **[ramindusn.github.io/keepass-ui-automation](https://ramindusn.github.io/keepass-ui-automation/)**. It shows the trend across runs, links each run to its workflow run, and names the KeePass version and runner it ran on.
 
+### On a pull request
+
+A pull request runs only the smoke tests, and its report is not published. Every run uploads two artifacts and can see them at the bottom of the run's **Summary** page in Actions:
+
+| Artifact | Contains |
+|---|---|
+| `allure-report` | The report for that run |
+| `test-evidence` | The videos, screenshots and UI trees as plain files |
+
+The report does not open by double-clicking `index.html`. Unzip it and serve the folder:
+
+```bash
+unzip allure-report.zip -d allure-report
+cd allure-report
+python3 -m http.server 8080     # then open http://localhost:8080
+```
+
+### After merge
+
+When a pull request is merged, `main` runs the full test suite and publishes its report to the [live Allure report](https://ramindusn.github.io/keepass-ui-automation/).
+
 ## CI
 
 ```mermaid
