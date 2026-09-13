@@ -21,9 +21,6 @@ namespace KeePassAutomation.Tests.Setup
             // The app coming to the front, so that clicks reach it.
             public static readonly TimeSpan Foreground = TimeSpan.FromSeconds(10);
 
-            // Closing cleanly, before the process is killed.
-            public static readonly TimeSpan Shutdown = TimeSpan.FromSeconds(5);
-
             // The recorder releasing the video file after the test.
             public static readonly TimeSpan VideoFinish = TimeSpan.FromSeconds(15);
         }
