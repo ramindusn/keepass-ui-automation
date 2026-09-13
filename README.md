@@ -100,7 +100,7 @@ The report for `main` is live at **[ramindusn.github.io/keepass-ui-automation](h
 
 ### On a pull request
 
-A pull request runs only the smoke tests, and its report is not published. Every run uploads two artifacts and can see them at the bottom of the run's **Summary** page in Actions:
+A pull request runs only the smoke tests, and its report is not published. Every run uploads two artifacts, and you can see them at the bottom of the run's **Summary** page in Actions:
 
 | Artifact | Contains |
 |---|---|
@@ -126,7 +126,7 @@ flowchart LR
     L[lint<br>Linux: dotnet format] --> U[ui-tests<br>Windows: fetch, build, test,<br>requirement check, report] --> P[publish-report<br>main only: GitHub Pages]
 ```
 
-Pull requests run the smoke tests. `main` runs every test, including `FailsOnPurpose`, which fails deliberately so the published report always shows a failure with its evidence.
+Pull requests run the smoke tests. `main` runs every test.
 
 The report and the evidence are produced even when tests fail, which is when they matter.
 

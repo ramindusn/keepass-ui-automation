@@ -22,8 +22,9 @@ namespace KeePassAutomation.Tests.Scenarios
             Assert.That(_mainWindow.Title, Does.Contain("KeePass"));
         }
 
-        // Fails on purpose, so the report on main shows a failure with its screenshot, UIA tree and video.
+        // Fails on purpose, to show a failure with its screenshot, UIA tree and video. Remove the Ignore to run it.
         [Test]
+        [Ignore("Fails on purpose; skipped until a failure needs to be shown.")]
         [Requirement("The application starts and presents its main window", 16)]
         public void FailsOnPurpose()
         {
