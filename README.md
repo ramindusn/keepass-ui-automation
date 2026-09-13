@@ -5,14 +5,14 @@ Desktop UI tests for [KeePass 2.x](https://keepass.info/), written in C# with Fl
 [![ci](https://github.com/ramindusn/keepass-ui-automation/actions/workflows/ci.yml/badge.svg)](https://github.com/ramindusn/keepass-ui-automation/actions/workflows/ci.yml)
 [![report](https://img.shields.io/badge/Allure%20report-live-blue)](https://ramindusn.github.io/keepass-ui-automation/)
 
-| | |
-|---|---|
-| **Application** | KeePass 2.61.1, downloaded and checksum-verified by a script, never committed |
-| **Driver** | FlaUI 5 over Windows UI Automation |
-| **Tests** | NUnit 4, one class per window, a fresh KeePass for every test |
-| **Evidence** | A video of every test, plus a screenshot and the UI tree of every failure |
-| **Report** | Allure, published to GitHub Pages on every run of `main` |
-| **CI** | GitHub Actions: style check on Linux, then smoke tests on pull requests and all tests on `main`, on Windows |
+| What | Tool | How |
+|---|---|---|
+| Application | KeePass 2.61.1 | Downloaded and checksum-verified by a script, never committed |
+| Driver | FlaUI 5 | Windows UI Automation |
+| Tests | NUnit 4 | One class per window, a fresh KeePass for every test |
+| Evidence | FlaUI and ffmpeg | A video of every test, plus a screenshot and the UI tree of every failure |
+| Report | Allure | Published to GitHub Pages on every run of `main` |
+| CI | GitHub Actions | Style check on Linux; smoke tests on pull requests, all tests on `main`, on Windows |
 
 ## How it fits together
 
