@@ -22,13 +22,11 @@ namespace KeePassAutomation.Tests.Scenarios
             Assert.That(_mainWindow.Title, Does.Contain("KeePass"));
         }
 
-        // Fails on purpose, to show a failure with its screenshot, UIA tree and video.
         [Test]
-        //[Explicit("Fails on purpose; runs only when selected by name")]
         [Requirement("The application starts and presents its main window", 16)]
         public void FailsOnPurpose()
         {
-            Assert.That(_mainWindow.Title, Does.Contain("Notepad"));
+            Assert.That(_mainWindow.Title, Does.Contain("KeePass"));
         }
 
         [Test]
