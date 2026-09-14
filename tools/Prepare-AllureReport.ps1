@@ -24,13 +24,14 @@ foreach ($file in 'history.json', 'history-trend.json', 'duration-trend.json', '
     }
 }
 
-# The run's name and link, shown on each point of the trend.
+# The run's name, number and link, shown on each point of the trend.
 @{
-    name      = 'GitHub Actions'
-    type      = 'github'
-    buildName = "$env:GITHUB_WORKFLOW #$env:GITHUB_RUN_NUMBER"
-    buildUrl  = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID"
-    reportUrl = $ReportUrl
+    name       = 'GitHub Actions'
+    type       = 'github'
+    buildName  = "$env:GITHUB_WORKFLOW #$env:GITHUB_RUN_NUMBER"
+    buildOrder = [int]$env:GITHUB_RUN_NUMBER
+    buildUrl   = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID"
+    reportUrl  = $ReportUrl
 } | ConvertTo-Json | Set-Content (Join-Path $ResultsDirectory 'executor.json')
 
 # What the run ran against, shown on the report's Overview.
