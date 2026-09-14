@@ -80,12 +80,21 @@ A pull request runs only the smoke tests, and its report is not published. Every
 | `allure-report` | The report for that run |
 | `test-evidence` | The videos, screenshots and UI trees as plain files |
 
-The report does not open by double-clicking `index.html`. Unzip it and serve the folder:
+The report does not open by double-clicking `index.html`. Unzip it, serve the folder, then open http://localhost:8080.
+
+macOS and Linux:
 
 ```bash
 unzip allure-report.zip -d allure-report
 cd allure-report
-python3 -m http.server 8080     # then open http://localhost:8080
+python3 -m http.server 8080
+```
+
+Windows, in PowerShell:
+
+```powershell
+Expand-Archive allure-report.zip -DestinationPath allure-report
+npx http-server allure-report -p 8080
 ```
 
 ### After merge
