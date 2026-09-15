@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using KeePassAutomation.Framework.AppUnderTest;
 using KeePassAutomation.Framework.Core;
@@ -10,90 +9,88 @@ namespace KeePassAutomation.Screens
     // KeePass's main window: one method per action.
     public sealed class MainWindow : ScreenObject
     {
-        private const string GroupTree = "m_tvGroups";
-        private const string EntryList = "m_lvEntries";
-        private const string MainMenu = "m_menuMain";
-        private const string Toolbar = "m_toolMain";
+        private readonly Element _groupTree;
+        private readonly Element _entryList;
+        private readonly Element _mainMenu;
+        private readonly Element _toolbar;
 
         public MainWindow(AppSession session) : base(session)
         {
+            _groupTree = ById("m_tvGroups");
+            _entryList = ById("m_lvEntries");
+            _mainMenu = ById("m_menuMain");
+            _toolbar = ById("m_toolMain");
         }
 
         public string Title
         {
-            get { return Root.Name; }
+            get { return WindowTitle; }
         }
 
         // True when the group tree has groups; the title can't be trusted, as KeePass shortens it.
         public bool IsDatabaseOpen
         {
-            get { return Find(GroupTree).FindFirstChild(cf => cf.ByControlType(ControlType.TreeItem)) != null; }
+            get { return _groupTree.HasChild(ControlType.TreeItem); }
         }
 
         // The titles of the entries in the list.
         public IReadOnlyList<string> EntryTitles
         {
-            get
-            {
-                var titles = new List<string>();
-
-                foreach (var row in FindRows(EntryList))
-                {
-                    titles.Add(row.Name);
-                }
-
-                return titles;
-            }
+            get { return _entryList.ChildNames(ControlType.ListItem); }
         }
 
         // Clicks a toolbar button by its name.
         public void ClickToolbarButton(string name)
         {
-            ByName(Toolbar, ControlType.Button, name).Click();
+            _toolbar.Child(ControlType.Button, name).Click();
         }
 
         // Opens a menu and clicks one of its items.
         public void ClickMenuItem(string menu, string item)
         {
-            FindByName(Find(MainMenu), ControlType.MenuItem, menu).AsMenuItem().Expand();
-            FindByName(Root, ControlType.MenuItem, item).Click();
+            _mainMenu.Child(ControlType.MenuItem, menu).Expand();
+
+            // An open menu's items sit under the window, not under the menu bar.
+            ByName(ControlType.MenuItem, item).Click();
         }
 
         // Selects a group in the tree and waits until it is selected.
         public void SelectGroup(string groupName)
         {
-            var tree = Find(GroupTree);
-            var group = FindByName(tree, ControlType.TreeItem, groupName).AsTreeItem();
+            var group = _groupTree.Child(ControlType.TreeItem, groupName);
 
             group.Click();
-            Waits.Until(tree, () => group.IsSelected, "group '" + groupName + "' to be selected");
+            WaitUntil(() => group.IsSelected, "group '" + groupName + "' to be selected");
         }
 
+        // Selects an entry in the list by its title.
         public void SelectEntry(string title)
         {
-            ByName(EntryList, ControlType.ListItem, title).Click();
+            _entryList.Child(ControlType.ListItem, title).Click();
         }
 
         // Waits until an entry with this title appears in the list.
         public void WaitForEntryRow(string title)
         {
-            FindByName(Find(EntryList), ControlType.ListItem, title);
+            _entryList.Child(ControlType.ListItem, title).WaitToAppear();
         }
 
+        // Waits until the group tree shows an open database.
         public void WaitForDatabaseToOpen()
         {
-            Waits.Until(Root, () => IsDatabaseOpen, "a database to open");
+            WaitUntil(() => IsDatabaseOpen, "a database to open");
         }
 
+        // Waits until the group tree is empty again.
         public void WaitForDatabaseToClose()
         {
-            Waits.Until(Root, () => !IsDatabaseOpen, "the database to close");
+            WaitUntil(() => !IsDatabaseOpen, "the database to close");
         }
 
         // Waits until the title loses its "*", which marks unsaved changes.
         public void WaitForDatabaseToBeSaved()
         {
-            Waits.Until(Root, () => !Title.EndsWith("* - KeePass", StringComparison.Ordinal), "the database to be saved");
+            WaitUntil(() => !Title.EndsWith("* - KeePass", StringComparison.Ordinal), "the database to be saved");
         }
     }
 }
