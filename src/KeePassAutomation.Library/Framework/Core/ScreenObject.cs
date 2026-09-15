@@ -1,3 +1,4 @@
+using System;
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using FlaUI.Core.Input;
@@ -6,32 +7,24 @@ using KeePassAutomation.Framework.AppUnderTest;
 
 namespace KeePassAutomation.Framework.Core
 {
-    // The base of every screen, the main window and each dialog alike. It finds its window when an
-    // action runs, and searches only inside it.
+    // The base of every screen, the MainWindow screen and each dialog alike. A screen declares its
+    // controls with ById or ByName and uses them; finding windows and waiting happen here.
     public abstract class ScreenObject
     {
         private readonly AppSession _session;
         private readonly string[] _titles;
 
-        // Dialogs pass their window title; the main window passes none.
+        // Dialogs pass their window title. A screen with no title uses the window KeePass opened at launch.
         protected ScreenObject(AppSession session, params string[] titles)
         {
             _session = session;
             _titles = titles;
         }
 
-        // This screen's window, looked up again on each action.
-        protected AutomationElement Root
+        // The title of this screen's window.
+        protected string WindowTitle
         {
-            get
-            {
-                if (_titles.Length == 0)
-                {
-                    return _session.MainWindow;
-                }
-
-                return _session.WaitForWindow(_titles);
-            }
+            get { return Root.Name; }
         }
 
         // A control, looked up by its automation id when it's used.
@@ -43,25 +36,19 @@ namespace KeePassAutomation.Framework.Core
         // A control without an automation id, looked up by its type and name.
         protected Element ByName(string containerId, ControlType type, string name)
         {
-            return new Element(() => FindByName(Find(containerId), type, name));
+            return ById(containerId).Child(type, name);
         }
 
-        // Waits for a control with this automation id and returns it.
-        protected AutomationElement Find(string automationId)
+        // A control anywhere in this screen's window, looked up by its type and name.
+        protected Element ByName(ControlType type, string name)
         {
-            var root = Root;
-
-            return Waits.For(root,
-                () => root.FindFirstDescendant(cf => cf.ByAutomationId(automationId)),
-                "element with AutomationId '" + automationId + "'");
+            return new Element(() => Root).Child(type, name);
         }
 
-        // Waits for a control with this type and name and returns it.
-        protected static AutomationElement FindByName(AutomationElement container, ControlType type, string name)
+        // Waits until the condition holds. On timeout the error shows this screen's window.
+        protected void WaitUntil(Func<bool> condition, string what)
         {
-            return Waits.For(container,
-                () => container.FindFirstDescendant(cf => cf.ByControlType(type).And(cf.ByName(name))),
-                type + " named '" + name + "'");
+            Waits.Until(Root, condition, what);
         }
 
         // Presses Enter on the focused control.
@@ -70,10 +57,30 @@ namespace KeePassAutomation.Framework.Core
             Keyboard.Type(VirtualKeyShort.RETURN);
         }
 
-        // The rows of a list, top to bottom.
-        protected AutomationElement[] FindRows(string listAutomationId)
+        // This screen's window, looked up again on each action.
+        private AutomationElement Root
         {
-            return Find(listAutomationId).FindAllDescendants(cf => cf.ByControlType(ControlType.ListItem));
+            get
+            {
+                // No title: this is the MainWindow screen, so use the window KeePass opened at launch.
+                if (_titles.Length == 0)
+                {
+                    return _session.AppWindow;
+                }
+
+                // A title: this is a dialog, so find its window by that title.
+                return _session.WaitForWindow(_titles);
+            }
+        }
+
+        // Waits for a control with this automation id and returns it.
+        private AutomationElement Find(string automationId)
+        {
+            var root = Root;
+
+            return Waits.For(root,
+                () => root.FindFirstDescendant(cf => cf.ByAutomationId(automationId)),
+                "element with AutomationId '" + automationId + "'");
         }
     }
 }

@@ -52,7 +52,7 @@ namespace KeePassAutomation.Tests.Setup
             // Failure evidence first, while KeePass is still on screen.
             if (_session != null && outcome == TestStatus.Failed)
             {
-                Evidence.CaptureFailure(_session.MainWindow, testName);
+                Evidence.CaptureFailure(_session.AppWindow, testName);
             }
 
             var video = Evidence.StopVideo(_recording);
